@@ -17,7 +17,15 @@ Use this skill when delegation, independent review, iterative repair, or special
 
 ## Install
 
-Copy this entire directory into your agent host's configured skills directory, or install it from its published Git repository using that host's skills installer. The portable core is `SKILL.md` plus `references/`; `agents/openai.yaml` is optional UI metadata for hosts that recognize it.
+Canonical source: [greate43/supervised-multi-agent](https://github.com/greate43/supervised-multi-agent).
+
+Copy this entire directory into your agent host's configured skills directory, or install it from the published Git repository using that host's skills installer. For hosts supported by the Skills CLI:
+
+```sh
+npx skills add greate43/supervised-multi-agent
+```
+
+The portable core is `SKILL.md` plus `references/`; `agents/openai.yaml` is optional UI metadata for hosts that recognize it.
 
 ## Invoke
 

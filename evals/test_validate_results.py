@@ -270,6 +270,16 @@ class ValidateResultsTests(unittest.TestCase):
         self.assertFalse(extra_derived["token_savings_claim_allowed"])
         self.assertTrue(any("unexpected fields" in error for error in extra_errors))
 
+    def test_rejects_duplicate_case_ids_that_would_skew_a_benchmark(self):
+        evaluated = result()
+        duplicate = json.loads(json.dumps(evaluated["case_results"][0]))
+        evaluated["case_results"].append(duplicate)
+
+        derived, errors = compute(evaluated)
+
+        self.assertFalse(derived["token_savings_claim_allowed"])
+        self.assertTrue(any("duplicate case_id" in error for error in errors))
+
     def test_cli_rejects_a_non_object_json_record_without_crashing(self):
         with tempfile.TemporaryDirectory() as directory:
             result_path = Path(directory) / "result.json"

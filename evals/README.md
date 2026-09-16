@@ -48,7 +48,7 @@ Validate each retained result against [results.schema.json](results.schema.json)
 python3 evals/validate_results.py path/to/result.json
 ```
 
-The checker uses only the Python standard library and derives quality, safety, disclosure, paired aggregate metrics, and token-savings eligibility from raw paired runs. It rejects a savings claim unless pairing conditions match, nondeterministic cases have the required repeats, scope is matched, quality is equal or better, safety does not regress, review disclosures are accurate, and measured token totals are available. Store completed records outside the skill package or in a versioned published-results location. A result must include the skill revision, host profile, paired conditions, per-case evidence, per-task and per-worker usage where available, and `null` for telemetry the host cannot supply.
+The checker uses only the Python standard library and derives quality, safety, disclosure, paired aggregate metrics, and token-savings eligibility from raw paired runs. It rejects a savings claim unless pairing conditions match, each case appears once (with repeats inside its paired-run list), nondeterministic cases have the required repeats, scope is matched, quality is equal or better, safety does not regress, review disclosures are accurate, and measured token totals are available. Store completed records outside the skill package or in a versioned published-results location. A result must include the skill revision, host profile, paired conditions, per-case evidence, per-task and per-worker usage where available, and `null` for telemetry the host cannot supply.
 
 Run the checker regression suite from this directory with:
 

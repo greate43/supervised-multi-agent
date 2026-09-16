@@ -345,6 +345,7 @@ def compute(result: dict) -> tuple[dict, list[str]]:
     if not isinstance(case_results, list) or not case_results:
         errors.append("case_results must contain at least one case")
         case_results = []
+    seen_case_ids: set[str] = set()
 
     for case in case_results:
         if not isinstance(case, dict):
@@ -360,6 +361,10 @@ def compute(result: dict) -> tuple[dict, list[str]]:
         if not isinstance(case_id, str) or not case_id:
             errors.append("case_id must be a non-empty string")
             case_id = "<unknown>"
+        elif case_id in seen_case_ids:
+            errors.append(f"duplicate case_id: {case_id}")
+        else:
+            seen_case_ids.add(case_id)
         if not isinstance(case.get("nondeterministic"), bool):
             errors.append(f"{case_id}: nondeterministic must be boolean")
         runs = case.get("paired_runs")
@@ -491,6 +496,7 @@ def compute(result: dict) -> tuple[dict, list[str]]:
         and token_totals_available
         and token_measurement_comparable
         and has_positive_token_savings
+        and not errors
     )
     savings_percent = None
     if eligible:

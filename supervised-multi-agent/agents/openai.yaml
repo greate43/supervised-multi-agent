@@ -1,0 +1,7 @@
+interface:
+  display_name: "Supervised Multi-Agent"
+  short_description: "Autonomous, quality-verified agent teamwork"
+  default_prompt: "Use $supervised-multi-agent to complete this task autonomously with appropriate specialist agents, independent review, and evidence for every acceptance criterion. Continue through repair and verification; ask only for genuinely blocking information."
+
+policy:
+  allow_implicit_invocation: true

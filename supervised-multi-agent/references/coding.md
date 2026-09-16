@@ -6,6 +6,8 @@ Use this reference for source code, infrastructure, configuration, debugging, mi
 
 Inspect the user request, repository instructions, architecture and contribution documents, build and CI configuration, nearby implementation, tests, and established conventions. Convert them into observable acceptance criteria and a risk-based verification plan before delegation. Existing project rules override generic preferences.
 
+Before introducing a new screen, component, function, service, data model, utility, configuration path, or interaction pattern, search the current architecture, design system, symbol index, adjacent features, and tests for equivalent or closely related behavior. Reuse or extend an existing implementation when its semantics, layer ownership, lifecycle or state model, accessibility, styling, API contract, and compatibility fit the request. Visual or name similarity alone is not enough: do not force reuse that changes unrelated behavior, crosses an ownership boundary, or increases coupling. When a parallel implementation is necessary, record the concrete incompatibility or architectural boundary that makes reuse unsafe, and avoid copying behavior that should remain centralized.
+
 Include the dimensions that apply: functional correctness, complete requested behavior, edge cases and failure handling, architecture and API contracts, type and data correctness, lifecycle and concurrency safety, backward compatibility and migrations, security and privacy, performance and resource use, accessibility and UX states, observability or analytics, maintainability, and documentation. Omit irrelevant dimensions; never omit a relevant one to save tokens.
 
 ## Team shape
@@ -21,7 +23,7 @@ Prefer one implementer for tightly coupled files. For parallel implementation, u
 
 ## Quality gate
 
-Implement the complete requested behavior, not merely scaffolding, examples, unfinished markers, or a proposed patch. Inspect the final diff and directly exercise the changed behavior when possible. Run the smallest reliable checks that prove the change: focused tests first, then compilation, static analysis, integration, UI, performance, security, accessibility, migration, or broader regression checks when the risk warrants them or project instructions require them.
+Implement the complete requested behavior, not merely scaffolding, examples, unfinished markers, or a proposed patch. Inspect the final diff for avoidable duplicate UI, logic, data models, utilities, or architectural paths; verify that each reuse, extension, or new-implementation decision matches the discovered contracts. Directly exercise the changed behavior when possible. Run the smallest reliable checks that prove the change: focused tests first, then compilation, static analysis, integration, UI, performance, security, accessibility, migration, or broader regression checks when the risk warrants them or project instructions require them.
 
 Before running repository-controlled commands, hooks, plugins, build logic, or downloaded dependencies in an unfamiliar or untrusted project, inspect the relevant execution entry points. Prefer a sandbox with credentials removed and network, filesystem, and host access minimized. If adequate isolation is unavailable and execution could expose secrets or affect systems outside the task, obtain required approval or return `BLOCKED`; do not run it merely to satisfy validation.
 

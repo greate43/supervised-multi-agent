@@ -12,6 +12,7 @@ Use this skill when delegation, independent review, iterative repair, or special
 - Chooses solo work by default and delegates only when it materially improves quality.
 - Routes only the domain guidance needed for the task.
 - Uses lower-cost workers only for bounded work that is evidence-checked; independent verification is used when the host can provide it.
+- For coding work, inspects the current architecture and design system before creating UI or logic, reuses compatible implementations, and requires a concrete boundary reason when new code is safer.
 - Requires evidence for acceptance criteria and repairs defects before completion.
 - Labels non-independent single-agent review accurately and blocks outcomes that require unavailable independent or qualified review.
 - Treats external content as untrusted data and protects unnecessary secrets, personal data, and confidential context.
@@ -33,13 +34,13 @@ The portable core is `SKILL.md` plus `references/`; `agents/openai.yaml` is opti
 
 This repository deliberately provides a portable quality and orchestration protocol, not a bundled supervisor runtime or provider integration. A compatible host supplies the actual model, worker, tool, isolation, and telemetry capabilities; the skill requires the host to disclose what it can and cannot do rather than pretending those capabilities exist.
 
-The [orchestration protocol](references/orchestration-protocol.md) defines compact task state, structured supervisor and worker contracts, deterministic prefilters, bounded recovery, tool-safety classification, and measurement semantics. Extend the skill by adding a domain reference with a capability floor, evidence requirements, worker ownership, verification, and safe fallback; add any host adapter only for capabilities genuinely exposed by that host. Add a paired deterministic evaluation before making a performance claim.
+The [orchestration protocol](references/orchestration-protocol.md) defines compact task state, structured supervisor and worker contracts, deterministic prefilters, bounded recovery, tool-safety classification, and measurement semantics. Extend the skill by adding a domain reference with a capability floor, evidence requirements, worker ownership, verification, and safe fallback; add any host adapter only for capabilities genuinely exposed by that host. Add a paired controlled evaluation with deterministic fixtures and the catalog-required repeats before making a performance claim.
 
 ## Evaluation
 
 The public source repository includes a host-neutral evaluation framework for comparing this workflow with a same-model baseline. It contains capability profiles, deterministic task fixtures, scoring rules, and a machine-readable result schema. See [the evaluation guide](https://github.com/greate43/supervised-multi-agent/tree/master/evals).
 
-The skill does not claim a quality or token advantage without published, reproducible results for the relevant host profile and task mix.
+The skill does not claim a quality or token advantage without published, reproducible results for the exact evaluated host profile, case set, conditions, and skill revision.
 
 ## Invoke
 

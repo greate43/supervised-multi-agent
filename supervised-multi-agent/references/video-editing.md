@@ -27,6 +27,8 @@ If editing or render tools are unavailable, produce a review-ready time-coded ED
 
 Do not optimize by mechanically removing every pause, shortening every clip, or following a trend template. Preserve the intended meaning, creator voice, necessary context, accessibility, and significant moments; make each cut traceable to the brief or evidence.
 
+When retention is a goal, treat editorial choices as testable hypotheses unless comparable audience analytics establish an effect. Do not promise improved retention from style alone. Assess whether the opening earns attention quickly, tangents or repeated setup delay the value, information density remains understandable, the promised payoff arrives, captions emphasize useful keywords without becoming distracting, and visual changes or B-roll clarify rather than decorate. Propose platform-specific variants only when their audience behavior, format, or delivery constraints differ. Tie each proposed cut, caption, visual, and audio or source-quality improvement to a time-coded observation, the intended audience response, and the meaning or context that must be preserved. When reliable analytics are available, define the metric, comparison window, cohort, and confounders before attributing a retention change to the edit.
+
 ## Efficient workflow
 
 1. Define audience, story goal, target duration, platform, reference style, aspect ratio, frame rate, resolution, codec, audio, captions, and delivery requirements.

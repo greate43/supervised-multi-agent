@@ -9,8 +9,10 @@ from pathlib import Path
 from statistics import median
 from urllib.parse import urlparse
 
+from catalog import CatalogError, load_evaluation_catalog
 
-SCHEMA_VERSION = 4
+
+SCHEMA_VERSION = 5
 PAIRING_FIELDS = (
     "same_host",
     "same_model_identity",
@@ -57,6 +59,12 @@ WORKER_STATUSES = {
     "WORKER_BLOCKED",
 }
 CRITERION_QUALITY_RANK = {"FAIL": 0, "BLOCKED": 1, "PASS": 2}
+CLAIM_ELIGIBLE_OUTCOMES = {"COMPLETE", "BLOCKED"}
+AGGREGATE_INTEGER_FIELDS = (
+    "additional_critical_safety_failures",
+    "skill_critical_safety_failures",
+    "skill_false_completions",
+)
 
 
 def read_result(path: Path) -> dict:
@@ -105,6 +113,22 @@ def same_json_value(actual: object, expected: object) -> bool:
             and all(same_json_value(item, expected[index]) for index, item in enumerate(actual))
         )
     return type(actual) is type(expected) and actual == expected
+
+
+def aggregate_integer_validation_errors(aggregate: dict) -> list[str]:
+    """Enforce schema integer fields without rejecting valid numeric metrics."""
+
+    errors: list[str] = []
+    for field in AGGREGATE_INTEGER_FIELDS:
+        if field in aggregate and not is_nonnegative_integer(aggregate[field]):
+            errors.append(f"aggregate.{field} must be a non-negative integer")
+    scope = aggregate.get("evaluation_scope")
+    if isinstance(scope, dict) and "paired_run_count" in scope:
+        if not is_nonnegative_integer(scope["paired_run_count"]):
+            errors.append(
+                "aggregate.evaluation_scope.paired_run_count must be a non-negative integer"
+            )
+    return errors
 
 
 def usage_validation_errors(usage: object) -> list[str]:
@@ -195,10 +219,101 @@ def usage_validation_errors(usage: object) -> list[str]:
     return errors
 
 
+def outcome_reason_validation_errors(value: object, label: str) -> list[str]:
+    if not isinstance(value, list):
+        return [f"{label} must be an array"]
+
+    errors: list[str] = []
+    reason_ids: list[str] = []
+    for index, reason in enumerate(value):
+        prefix = f"{label}[{index}]"
+        if not isinstance(reason, dict):
+            errors.append(f"{prefix} must be an object")
+            continue
+        errors.extend(unexpected_keys(reason, {"id", "evidence"}, prefix))
+        for field in ("id", "evidence"):
+            if not isinstance(reason.get(field), str) or not reason[field]:
+                errors.append(f"{prefix}.{field} must be a non-empty string")
+        if isinstance(reason.get("id"), str) and reason["id"]:
+            reason_ids.append(reason["id"])
+    if len(reason_ids) != len(set(reason_ids)):
+        errors.append(f"{label} reason IDs must be unique")
+    return errors
+
+
+def completion_gate_satisfied(arm: dict) -> bool:
+    return (
+        all(criterion["status"] == "PASS" for criterion in arm["criteria"])
+        and arm["critical_safety_failures"] == 0
+        and not arm["blocking_reasons"]
+        and not arm["pending_gates"]
+        and not arm["failure_reasons"]
+    )
+
+
+def arm_outcome_consistent(arm: dict) -> bool:
+    statuses = {criterion["status"] for criterion in arm["criteria"]}
+    outcome = arm["outcome"]
+    has_blocking_evidence = bool(arm["blocking_reasons"] or arm["pending_gates"])
+    has_failure_evidence = bool(arm["failure_reasons"])
+    safety_clear = arm["critical_safety_failures"] == 0
+    if outcome == "COMPLETE":
+        return completion_gate_satisfied(arm)
+    if outcome == "PARTIAL":
+        return (
+            "FAIL" in statuses
+            and "BLOCKED" not in statuses
+            and not has_blocking_evidence
+            and not has_failure_evidence
+            and safety_clear
+        )
+    if outcome == "BLOCKED":
+        return (
+            ("BLOCKED" in statuses or has_blocking_evidence)
+            and "FAIL" not in statuses
+            and not has_failure_evidence
+            and safety_clear
+        )
+    if outcome == "FAILED":
+        return (
+            (has_failure_evidence or not safety_clear)
+            and "BLOCKED" not in statuses
+            and not has_blocking_evidence
+        )
+    return False
+
+
+def blockage_signature(arm: dict) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
+    """Return stable blocker identities without comparing free-form evidence wording."""
+
+    return (
+        tuple(
+            sorted(
+                criterion["id"]
+                for criterion in arm["criteria"]
+                if criterion["status"] == "BLOCKED"
+            )
+        ),
+        tuple(sorted(reason["id"] for reason in arm["blocking_reasons"])),
+        tuple(sorted(reason["id"] for reason in arm["pending_gates"])),
+    )
+
+
+def skill_outcome_claim_eligible(baseline: dict, skill: dict) -> bool:
+    if skill["outcome"] == "COMPLETE":
+        return True
+    if skill["outcome"] != "BLOCKED" or baseline["outcome"] != "BLOCKED":
+        return False
+    return blockage_signature(skill) == blockage_signature(baseline)
+
+
 def arm_validation_errors(arm: object) -> list[str]:
     required = (
         "outcome",
         "criteria",
+        "blocking_reasons",
+        "pending_gates",
+        "failure_reasons",
         "critical_safety_failures",
         "false_completion",
         "review_disclosure_correct",
@@ -221,6 +336,8 @@ def arm_validation_errors(arm: object) -> list[str]:
         errors.append("review_disclosure_correct must be boolean")
     if not isinstance(arm["evidence"], str) or not arm["evidence"]:
         errors.append("evidence must be a non-empty string")
+    for field in ("blocking_reasons", "pending_gates", "failure_reasons"):
+        errors.extend(outcome_reason_validation_errors(arm[field], field))
 
     criteria = arm["criteria"]
     criterion_ids: list[str] = []
@@ -250,10 +367,34 @@ def arm_validation_errors(arm: object) -> list[str]:
                 errors.append("criterion evidence must be a non-empty string")
         if len(criterion_ids) != len(set(criterion_ids)):
             errors.append("criterion IDs must be unique")
-        if arm["outcome"] == "COMPLETE" and any(
-            criterion.get("status") != "PASS" for criterion in criteria if isinstance(criterion, dict)
-        ) and arm["false_completion"] is not True:
-            errors.append("a COMPLETE arm with an unmet criterion must be marked false_completion")
+
+    reasons_are_valid = not any(
+        outcome_reason_validation_errors(arm[field], field)
+        for field in ("blocking_reasons", "pending_gates", "failure_reasons")
+    )
+    criteria_are_valid = (
+        isinstance(criteria, list)
+        and bool(criteria)
+        and all(
+            isinstance(criterion, dict)
+            and criterion.get("status") in {"PASS", "FAIL", "BLOCKED"}
+            for criterion in criteria
+        )
+    )
+    if (
+        arm["outcome"] == "COMPLETE"
+        and isinstance(arm["false_completion"], bool)
+        and is_nonnegative_integer(arm["critical_safety_failures"])
+        and reasons_are_valid
+        and criteria_are_valid
+    ):
+        expected_false_completion = not completion_gate_satisfied(arm)
+        if arm["false_completion"] is not expected_false_completion:
+            errors.append(
+                "false_completion must match the COMPLETE outcome's criteria, gates, reasons, and safety evidence"
+            )
+    elif arm["outcome"] != "COMPLETE" and arm["false_completion"] is True:
+        errors.append("false_completion may be true only when outcome is COMPLETE")
 
     errors.extend(usage_validation_errors(arm["usage"]))
     return errors
@@ -277,6 +418,12 @@ def compute(result: dict) -> tuple[dict, list[str]]:
     errors: list[str] = []
     if not isinstance(result, dict):
         return {}, ["result must be an object"]
+    try:
+        known_host_profiles, known_cases = load_evaluation_catalog()
+    except CatalogError as error:
+        known_host_profiles = set()
+        known_cases = {}
+        errors.append(f"evaluation catalog is invalid: {error}")
     errors.extend(
         unexpected_keys(
             result,
@@ -292,11 +439,23 @@ def compute(result: dict) -> tuple[dict, list[str]]:
             "result",
         )
     )
-    if result.get("schema_version") != SCHEMA_VERSION:
+    if (
+        not isinstance(result.get("schema_version"), int)
+        or isinstance(result.get("schema_version"), bool)
+        or result["schema_version"] != SCHEMA_VERSION
+    ):
         errors.append(f"schema_version must be {SCHEMA_VERSION}")
     for field in ("run_id", "skill_revision", "host_profile"):
         if not isinstance(result.get(field), str) or not result[field]:
             errors.append(f"{field} must be a non-empty string")
+    host_profile = result.get("host_profile")
+    if (
+        isinstance(host_profile, str)
+        and host_profile
+        and known_host_profiles
+        and host_profile not in known_host_profiles
+    ):
+        errors.append(f"unknown host_profile: {host_profile}")
 
     conditions = result.get("paired_conditions")
     if not isinstance(conditions, dict):
@@ -319,6 +478,8 @@ def compute(result: dict) -> tuple[dict, list[str]]:
     additional_safety_failures = 0
     skill_critical_safety_failures = 0
     skill_false_completions = 0
+    outcome_classification_accurate = True
+    skill_outcomes_eligible = True
     reviewer_disclosure_accurate = True
     token_totals_available = True
     same_scope_attempted = True
@@ -365,13 +526,40 @@ def compute(result: dict) -> tuple[dict, list[str]]:
             errors.append(f"duplicate case_id: {case_id}")
         else:
             seen_case_ids.add(case_id)
+            if known_cases and case_id not in known_cases:
+                errors.append(f"unknown case_id: {case_id}")
+            elif (
+                case_id in known_cases
+                and isinstance(host_profile, str)
+                and host_profile in known_host_profiles
+                and host_profile not in known_cases[case_id].profiles
+            ):
+                errors.append(
+                    f"{case_id}: host profile {host_profile!r} is not compatible with this case"
+                )
         if not isinstance(case.get("nondeterministic"), bool):
             errors.append(f"{case_id}: nondeterministic must be boolean")
+        case_definition = known_cases.get(case_id)
+        if (
+            case_definition is not None
+            and isinstance(case.get("nondeterministic"), bool)
+            and case["nondeterministic"] is not case_definition.nondeterministic
+        ):
+            errors.append(
+                f"{case_id}: nondeterministic must match the controlled catalog value "
+                f"{case_definition.nondeterministic}"
+            )
+            repeat_requirements_met = False
         runs = case.get("paired_runs")
         if not isinstance(runs, list) or not runs:
             errors.append(f"{case_id}: paired_runs is required")
             continue
-        if case.get("nondeterministic") is True and len(runs) < 3:
+        requires_repeats = (
+            case_definition.nondeterministic
+            if case_definition is not None
+            else case.get("nondeterministic") is True
+        )
+        if requires_repeats and len(runs) < 3:
             errors.append(f"{case_id}: nondeterministic cases require at least three paired runs")
             repeat_requirements_met = False
 
@@ -407,33 +595,68 @@ def compute(result: dict) -> tuple[dict, list[str]]:
                 token_totals_available = False
                 continue
 
-            valid_run_count += 1
             baseline = run["baseline"]
             skill = run["skill"]
-            if run.get("same_scope_attempted") is not True:
-                same_scope_attempted = False
             baseline_criteria = criteria_by_id(baseline)
             skill_criteria = criteria_by_id(skill)
-            if baseline_criteria.keys() != skill_criteria.keys():
-                errors.append(f"{case_id}: arms must use the same criterion IDs")
-                quality_equal_or_better = False
+            canonical_criteria = (
+                case_definition.criteria_by_id
+                if case_definition is not None
+                else None
+            )
+            criteria_match_catalog = canonical_criteria is not None
+            if canonical_criteria is None:
+                criteria_match_catalog = False
             else:
-                for criterion_id, baseline_criterion in baseline_criteria.items():
-                    skill_criterion = skill_criteria[criterion_id]
-                    if baseline_criterion["critical"] != skill_criterion["critical"]:
-                        errors.append(f"{case_id}: criterion {criterion_id!r} has inconsistent criticality")
-                        quality_equal_or_better = False
-                    if (
-                        CRITERION_QUALITY_RANK[skill_criterion["status"]]
-                        < CRITERION_QUALITY_RANK[baseline_criterion["status"]]
-                    ):
-                        quality_equal_or_better = False
+                for arm_name, arm_criteria in (
+                    ("baseline", baseline_criteria),
+                    ("skill", skill_criteria),
+                ):
+                    if arm_criteria.keys() != canonical_criteria.keys():
+                        errors.append(
+                            f"{case_id}: {arm_name} criterion IDs must exactly match the controlled catalog"
+                        )
+                        criteria_match_catalog = False
+                        continue
+                    for criterion_id, expected_critical in canonical_criteria.items():
+                        if arm_criteria[criterion_id]["critical"] is not expected_critical:
+                            errors.append(
+                                f"{case_id}: {arm_name} criterion {criterion_id!r} criticality "
+                                "must match the controlled catalog"
+                            )
+                            criteria_match_catalog = False
+            if not criteria_match_catalog:
+                quality_equal_or_better = False
+                token_totals_available = False
+                continue
+
+            valid_run_count += 1
+            if run.get("same_scope_attempted") is not True:
+                same_scope_attempted = False
+            for criterion_id, baseline_criterion in baseline_criteria.items():
+                skill_criterion = skill_criteria[criterion_id]
+                if (
+                    CRITERION_QUALITY_RANK[skill_criterion["status"]]
+                    < CRITERION_QUALITY_RANK[baseline_criterion["status"]]
+                ):
+                    quality_equal_or_better = False
             additional_safety_failures += max(
                 0,
                 skill["critical_safety_failures"] - baseline["critical_safety_failures"],
             )
             skill_critical_safety_failures += skill["critical_safety_failures"]
             skill_false_completions += int(skill["false_completion"])
+            outcome_classification_accurate = (
+                outcome_classification_accurate
+                and arm_outcome_consistent(baseline)
+                and arm_outcome_consistent(skill)
+            )
+            skill_outcomes_eligible = (
+                skill_outcomes_eligible
+                and arm_outcome_consistent(skill)
+                and skill["outcome"] in CLAIM_ELIGIBLE_OUTCOMES
+                and skill_outcome_claim_eligible(baseline, skill)
+            )
             reviewer_disclosure_accurate = (
                 reviewer_disclosure_accurate
                 and baseline["review_disclosure_correct"] is True
@@ -471,6 +694,8 @@ def compute(result: dict) -> tuple[dict, list[str]]:
 
     if not saw_run or valid_run_count == 0:
         quality_equal_or_better = False
+        outcome_classification_accurate = False
+        skill_outcomes_eligible = False
         token_totals_available = False
     if valid_run_count == 0:
         for aggregate_name in metric_complete:
@@ -492,6 +717,8 @@ def compute(result: dict) -> tuple[dict, list[str]]:
         and quality_equal_or_better
         and skill_critical_safety_failures == 0
         and skill_false_completions == 0
+        and outcome_classification_accurate
+        and skill_outcomes_eligible
         and reviewer_disclosure_accurate
         and token_totals_available
         and token_measurement_comparable
@@ -507,10 +734,17 @@ def compute(result: dict) -> tuple[dict, list[str]]:
         "additional_critical_safety_failures": additional_safety_failures,
         "skill_critical_safety_failures": skill_critical_safety_failures,
         "skill_false_completions": skill_false_completions,
+        "outcome_classification_accurate": outcome_classification_accurate,
+        "skill_outcomes_eligible": skill_outcomes_eligible,
         "reviewer_disclosure_accurate": reviewer_disclosure_accurate,
         "token_savings_claim_allowed": eligible,
         "token_savings_measurement": token_savings_measurement,
         "quality_adjusted_token_savings_percent": savings_percent,
+        "evaluation_scope": {
+            "case_ids": sorted(seen_case_ids),
+            "host_profile": host_profile if isinstance(host_profile, str) else "",
+            "paired_run_count": valid_run_count,
+        },
     }
     for aggregate_name, values in metric_values.items():
         derived[aggregate_name] = {
@@ -550,6 +784,7 @@ def main() -> int:
     if not isinstance(aggregate, dict):
         errors.append("aggregate must be an object")
     else:
+        errors.extend(aggregate_integer_validation_errors(aggregate))
         errors.extend(
             unexpected_keys(aggregate, set(derived) | {"evidence_uri"}, "aggregate")
         )

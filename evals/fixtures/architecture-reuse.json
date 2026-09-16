@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "request": {
+    "feature": "Add an interactive delayed-flight filter with selected, disabled, and loading states, and normalize flight numbers before lookup.",
+    "constraints": [
+      "Use the existing application architecture and design system.",
+      "Preserve accessibility labels, theme tokens, and existing lookup behavior."
+    ]
+  },
+  "architecture_snapshot": {
+    "design_system": {
+      "symbol": "SelectableFilterChip",
+      "owner": "shared design system",
+      "contract": [
+        "interactive selected state",
+        "disabled state",
+        "loading state",
+        "accessibility label",
+        "theme tokens"
+      ],
+      "existing_callers": ["search filters", "booking filters"]
+    },
+    "nearby_feature": {
+      "symbol": "FlightStatusPill",
+      "owner": "flight status presentation",
+      "contract": ["read-only status", "non-interactive semantics"],
+      "incompatibilities": ["no selected state", "no loading state", "not an input control"]
+    },
+    "domain_function": {
+      "symbol": "normalizeFlightNumber",
+      "owner": "flight lookup boundary",
+      "contract": "Trim surrounding whitespace and normalize the airline prefix before lookup.",
+      "existing_callers": ["manual lookup", "saved-flight lookup"]
+    },
+    "tests": [
+      "SelectableFilterChip interaction and accessibility tests",
+      "normalizeFlightNumber contract tests",
+      "flight filter integration tests"
+    ]
+  },
+  "expected": {
+    "reuse": [
+      {
+        "need": "interactive filter UI",
+        "symbol": "SelectableFilterChip",
+        "decision": "reuse or extend within the shared design-system contract"
+      },
+      {
+        "need": "flight-number normalization",
+        "symbol": "normalizeFlightNumber",
+        "decision": "reuse at the existing lookup boundary"
+      }
+    ],
+    "do_not_reuse": [
+      {
+        "symbol": "FlightStatusPill",
+        "reason": "Its read-only presentation semantics and ownership do not fit an interactive input control."
+      }
+    ],
+    "new_implementation_requires": [
+      "A concrete semantic, ownership, lifecycle, accessibility, API, or compatibility mismatch.",
+      "An explanation of why extending the existing owner is unsafe.",
+      "The affected callers and verification plan."
+    ],
+    "prohibited": [
+      "Duplicate normalization logic in the feature layer.",
+      "A new selectable chip without evaluating SelectableFilterChip.",
+      "Turning FlightStatusPill into an input merely because it looks similar."
+    ]
+  }
+}

@@ -20,15 +20,17 @@ Invoke `$supervised-multi-agent` when delegation, independent review, iterative 
 
 The workflow defaults to one capable agent when delegation would not materially improve quality. It uses a team only for independent work, specialist capability, genuine review blind spots, or safe ownership boundaries.
 
+For coding tasks, it also searches the existing architecture, components, functions, tests, and conventions before creating parallel UI or logic. Compatible implementations are reused or extended; incompatible reuse and unexplained duplication fail the quality gate.
+
 ## Architecture
 
 This is an instruction-first, host-neutral skill—not a vendor-specific supervisor runtime. Hosts supply their real model, worker, tool, isolation, and telemetry capabilities. The portable [orchestration protocol](supervised-multi-agent/references/orchestration-protocol.md) defines deterministic prefilters, compact handoffs, structured contracts, bounded recovery, safe tool use, and verification without assuming any provider API.
 
-To extend it, add only capabilities that a host actually exposes, document the worker or tool contract and safe fallback, then add a paired deterministic evaluation. Do not add placeholder integrations or claim model routing, independent review, token data, or completed mutations that the host cannot prove.
+To extend it, add only capabilities that a host actually exposes, document the worker or tool contract and safe fallback, then add a paired controlled evaluation with deterministic fixtures and the catalog-required repeats. Do not add placeholder integrations or claim model routing, independent review, token data, or completed mutations that the host cannot prove.
 
 ## Evaluation
 
-The repository includes a host-neutral [evaluation framework](evals/README.md) with capability profiles, deterministic fixtures, scoring rules, and a machine-readable result schema. It compares a same-model, same-tools baseline with and without the skill, and permits token-savings claims only when quality and safety are equal or better. It records model/tool calls, bounded retries, verification failures, context compression, and unnecessary supervisor interventions when the host exposes reliable telemetry.
+The repository includes a host-neutral [evaluation framework](evals/README.md) with capability profiles, deterministic fixtures, scoring rules, and a machine-readable result schema. It compares a same-model, same-tools baseline with and without the skill, and permits token-savings claims only when quality and safety are equal or better, outcomes are consistent, and case/profile scope is valid. Claims remain limited to the recorded cases, host profile, conditions, and skill revision. The framework records model/tool calls, bounded retries, verification failures, context compression, and unnecessary supervisor interventions when the host exposes reliable telemetry.
 
 No benchmark result is claimed until it is reproduced and published with its evidence.
 

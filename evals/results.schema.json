@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Supervised Multi-Agent Evaluation Result",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "skill_revision",
+    "host_profile",
+    "paired_conditions",
+    "case_results",
+    "aggregate"
+  ],
+  "properties": {
+    "schema_version": { "const": 3 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "skill_revision": { "type": "string", "minLength": 1 },
+    "host_profile": { "type": "string", "minLength": 1 },
+    "paired_conditions": {
+      "type": "object",
+      "required": ["same_host", "same_model_identity", "same_model_capability", "same_reasoning_setting", "same_tool_access", "same_input_files", "same_resource_ceiling"],
+      "properties": {
+        "same_host": { "type": "boolean" },
+        "same_model_identity": { "type": "boolean" },
+        "same_model_capability": { "type": "boolean" },
+        "same_reasoning_setting": { "type": "boolean" },
+        "same_tool_access": { "type": "boolean" },
+        "same_input_files": { "type": "boolean" },
+        "same_resource_ceiling": { "type": "boolean" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "case_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/caseResult" }
+    },
+    "aggregate": {
+      "type": "object",
+      "required": ["quality_equal_or_better", "additional_critical_safety_failures", "skill_critical_safety_failures", "skill_false_completions", "reviewer_disclosure_accurate", "token_savings_claim_allowed", "quality_adjusted_token_savings_percent"],
+      "properties": {
+        "quality_equal_or_better": { "type": "boolean" },
+        "additional_critical_safety_failures": { "type": "integer", "minimum": 0 },
+        "skill_critical_safety_failures": { "type": "integer", "minimum": 0 },
+        "skill_false_completions": { "type": "integer", "minimum": 0 },
+        "reviewer_disclosure_accurate": { "type": "boolean" },
+        "token_savings_claim_allowed": { "type": "boolean" },
+        "quality_adjusted_token_savings_percent": { "type": ["number", "null"] },
+        "median_tokens": { "$ref": "#/$defs/pairedMetric" },
+        "median_cost": { "$ref": "#/$defs/pairedMetric" },
+        "median_duration_seconds": { "$ref": "#/$defs/pairedMetric" },
+        "duplicate_tool_actions": { "$ref": "#/$defs/pairedMetric" },
+        "evidence_uri": { "type": ["string", "null"], "format": "uri" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "caseResult": {
+      "type": "object",
+      "required": ["case_id", "nondeterministic", "paired_runs"],
+      "properties": {
+        "case_id": { "type": "string", "minLength": 1 },
+        "nondeterministic": { "type": "boolean" },
+        "paired_runs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/pairedRun" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "pairedRun": {
+      "type": "object",
+      "required": ["same_scope_attempted", "baseline", "skill"],
+      "properties": {
+        "same_scope_attempted": { "type": "boolean" },
+        "baseline": { "$ref": "#/$defs/armResult" },
+        "skill": { "$ref": "#/$defs/armResult" }
+      },
+      "additionalProperties": false
+    },
+    "armResult": {
+      "type": "object",
+      "required": ["outcome", "criteria", "critical_safety_failures", "false_completion", "review_disclosure_correct", "tokens", "evidence"],
+      "properties": {
+        "outcome": { "enum": ["COMPLETE", "BLOCKED", "PARTIAL", "FAILED"] },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/criterion" }
+        },
+        "critical_safety_failures": { "type": "integer", "minimum": 0 },
+        "false_completion": { "type": "boolean" },
+        "review_disclosure_correct": { "type": "boolean" },
+        "tokens": { "type": ["integer", "null"], "minimum": 0 },
+        "cost": { "type": ["number", "null"], "minimum": 0 },
+        "duration_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "duplicate_tool_actions": { "type": ["integer", "null"], "minimum": 0 },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "criterion": {
+      "type": "object",
+      "required": ["id", "status", "critical", "evidence"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["PASS", "FAIL", "BLOCKED"] },
+        "critical": { "type": "boolean" },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "pairedMetric": {
+      "type": "object",
+      "required": ["baseline", "skill"],
+      "properties": {
+        "baseline": { "type": ["number", "null"], "minimum": 0 },
+        "skill": { "type": ["number", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

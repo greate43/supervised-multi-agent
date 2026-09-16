@@ -1,0 +1,56 @@
+schema_version: 1
+profiles:
+  solo:
+    description: One capable agent; no delegation or independent reviewer is available.
+    capabilities:
+      delegation: false
+      isolated_review: false
+      model_routing: false
+      multiple_writers: false
+    required_disclosures:
+      - Single-agent review is non-independent.
+      - No claim of model routing or independent review.
+
+  shared-context-delegation:
+    description: Workers can be delegated but reviewer context cannot be isolated from worker reasoning.
+    capabilities:
+      delegation: true
+      isolated_review: false
+      model_routing: optional
+      multiple_writers: true
+    required_disclosures:
+      - A reviewer with shared worker reasoning is not independent.
+      - Use a single writer for tightly coupled artifacts.
+
+  isolated-review:
+    description: Delegation and clean independent review are both available.
+    capabilities:
+      delegation: true
+      isolated_review: true
+      model_routing: optional
+      multiple_writers: true
+    required_disclosures:
+      - Call review independent only when isolation was actually used.
+
+  no-model-routing:
+    description: The host cannot inspect or switch models, but can perform the configured work.
+    capabilities:
+      delegation: optional
+      isolated_review: optional
+      model_routing: false
+      multiple_writers: optional
+    required_disclosures:
+      - Do not claim model routing.
+      - Do not complete a high-consequence criterion if the current agent cannot meet its required capability.
+      - Do not make a model-controlled token-savings claim when the host cannot establish a matched model setting.
+
+  single-writer:
+    description: Delegation may be available, but only one process can safely edit the primary artifact.
+    capabilities:
+      delegation: optional
+      isolated_review: optional
+      model_routing: optional
+      multiple_writers: false
+    required_disclosures:
+      - Keep one owner for the primary artifact.
+      - Other workers provide read-only evidence or isolated mergeable artifacts.

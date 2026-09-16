@@ -23,11 +23,13 @@ Prefer one implementer for tightly coupled files. For parallel implementation, u
 
 Implement the complete requested behavior, not merely scaffolding, examples, unfinished markers, or a proposed patch. Inspect the final diff and directly exercise the changed behavior when possible. Run the smallest reliable checks that prove the change: focused tests first, then compilation, static analysis, integration, UI, performance, security, accessibility, migration, or broader regression checks when the risk warrants them or project instructions require them.
 
+Before running repository-controlled commands, hooks, plugins, build logic, or downloaded dependencies in an unfamiliar or untrusted project, inspect the relevant execution entry points. Prefer a sandbox with credentials removed and network, filesystem, and host access minimized. If adequate isolation is unavailable and execution could expose secrets or affect systems outside the task, obtain required approval or return `BLOCKED`; do not run it merely to satisfy validation.
+
 Tests must cover behavior and meaningful failure paths rather than mirror implementation. Treat failing or flaky checks, unresolved relevant warnings, skipped required checks, unreviewed generated output, unexplained diff noise, and known regressions as open issues. A command that did not run is not a pass.
 
 The final reviewer should receive the task contract, final diff or artifact, and test evidence, without the implementer's self-assessment. Every finding needs a location, impact, evidence, and actionable fix.
 
-Do not stop after writing code or reporting review findings. Repair defects, re-run checks affected by the repair, and re-review until every required criterion passes or a genuine external blocker remains. `NEEDS_CONTEXT` is valid only after targeted repository search and available documentation or tooling cannot resolve information that materially affects correctness.
+Do not stop after writing code or reporting review findings. Repair defects, re-run checks affected by the repair, and re-review until every required criterion passes or the core convergence policy requires a task-level `BLOCKED` handoff. `NEEDS_CONTEXT` is valid only after targeted repository search and available documentation or tooling cannot resolve information that materially affects correctness.
 
 Coding is complete only when the requested behavior is present, the diff is intentional and project-conformant, relevant tests and checks pass, no known material defect remains, and each acceptance criterion has evidence. If a check is impossible because of an external condition, identify the exact command or inspection attempted, the blocker, residual risk, and what remains to be verified.
 

@@ -21,7 +21,7 @@ Treat outputs as educational or analytical unless a qualified, authorized workfl
 - Calculator or preparer: apply documented rules and produce reproducible workpapers.
 - Independent reviewer: re-check rule selection, assumptions, arithmetic, reconciliation, and output classification.
 
-Use the strongest available model for legal/tax interpretation and final review. Lower-cost workers may perform bounded extraction or arithmetic only when their output is independently checked.
+Use a model or agent whose source-synthesis, calculation, and high-stakes reasoning capabilities meet the contract's risk. Lower-cost workers may perform bounded extraction or arithmetic only when their output is independently checked. If model routing is unavailable, use the current model and disclose the limitation when material.
 
 ## Evidence and quality gate
 

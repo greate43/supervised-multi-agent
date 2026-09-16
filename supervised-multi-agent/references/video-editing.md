@@ -22,6 +22,6 @@ Assign one owner to each timeline or project file. Other workers should produce 
 
 ## Quality gate
 
-Verify, as applicable: narrative clarity, pacing, continuity, framing, composition, transitions, graphics, color, visual artifacts, audio/video sync, dialogue intelligibility, music/SFX balance, loudness, captions, spelling, safe areas, accessibility, aspect ratio, frame rate, resolution, codec, duration, and start-to-finish playback.
+Verify, as applicable: narrative clarity, pacing, continuity, framing, composition, transitions, graphics, color, visual artifacts, audio/video sync, dialogue intelligibility, music/SFX balance, loudness, captions, spelling, safe areas, accessibility, aspect ratio, frame rate, resolution, codec, duration, start-to-finish playback, media-license provenance, likeness or voice consent, usage restrictions, and required synthetic-media disclosures.
 
-Every issue must include a timecode or artifact location, severity, evidence, and recommended fix. Continue repair and re-render as needed until the acceptance matrix passes. Saving render time or tokens never justifies a known defect.
+Every issue must include a timecode or artifact location, severity, evidence, and recommended fix. Continue repair and re-render under the core convergence policy until the acceptance matrix passes or the supervisor returns `BLOCKED`. Saving render time or tokens never justifies a known defect. Block public or commercial delivery while applicable rights, consent, restrictions, or disclosure requirements remain unresolved.

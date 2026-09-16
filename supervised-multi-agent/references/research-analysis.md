@@ -7,7 +7,7 @@ Use this reference for factual research, comparisons, recommendations, investiga
 - Evidence workers: investigate independent questions, sources, datasets, or hypotheses.
 - Analyst: combine evidence, perform calculations, and develop the reasoning chain.
 - Skeptical reviewer: look for unsupported claims, conflicting evidence, missing alternatives, calculation errors, and stale information.
-- Synthesizer: produce the final answer from verified evidence and resolved disagreements.
+- Synthesizer: produce a draft synthesis and evidence map from verified evidence and resolved disagreements for supervisor verification.
 
 Use independent lanes only when they cover distinct questions or provide valuable corroboration.
 

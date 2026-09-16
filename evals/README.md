@@ -43,9 +43,9 @@ The checker validates the selected profile against this catalog and verifies tha
 
 ## Cases and fixtures
 
-[cases.yaml](cases.yaml) contains deterministic task briefs, expected invariants, and fixture paths. The fixtures avoid credentials, live accounts, destructive actions, and live-market or legal data. Host adapters may translate the case format but must preserve the task, conditions, and scoring rules.
+[cases.yaml](cases.yaml) contains deterministic task briefs, required and prohibited outcomes, and model-visible fixture paths. Hidden scorer oracles live under `oracles/` and must never be included in an evaluated arm's prompt or workspace. The fixtures avoid credentials, live accounts, destructive actions, and live-market or legal data. Host adapters may translate the case format but must preserve the task, conditions, and scoring rules.
 
-The included cases cover solo scope control, parallel research, coupled code, explicit ceilings, untrusted instructions, high-stakes capability limits, consequential mutations, video rights or consent, deterministic prefiltering, bounded recovery, compact handoffs, verification that catches defects, conditional review or approval, safe video fallback when editing tools are unavailable, and architecture-aware reuse before new UI or logic is created.
+The included cases cover solo scope control, parallel research, coupled code, explicit ceilings, untrusted instructions, high-stakes capability limits, consequential mutations, video rights or consent, deterministic prefiltering, bounded recovery, compact handoffs, verification that catches defects, conditional review or approval, safe video fallback when editing tools are unavailable, architecture-aware reuse before new UI or logic is created, and evidence-based supervisor review that distinguishes defective, acceptable, and unverifiable worker code without exposing scorer oracles.
 
 Case nondeterminism, canonical criterion IDs, and criticality are controlled by [cases.yaml](cases.yaml), not by a submitted result. A result must repeat those declarations exactly; the checker rejects attempts to lower the repeat count or substitute easier criteria.
 
@@ -81,6 +81,18 @@ Suggested aggregate measures:
 - Context-compression ratio, only when the retained handoff still preserves all material context
 - Median cost, duration, and duplicate tool actions
 
-The deterministic fixture integrity tests also run with the command above. They verify the protocol cases themselves; they do not substitute for running a host adapter or prove that a host uses the skill correctly.
+The deterministic fixture integrity tests also run with the command above. They verify protocol assets and hidden-oracle separation; they do not substitute for running a host adapter, scoring actual reviewer output against the hidden oracle, or prove that a host uses the skill correctly.
+
+### Worker-review behavioral adapter
+
+The neutral worker-review cases provide a host-independent prepare/score interface. `prepare` emits only the task, source artifacts, and response contract; it never emits the hidden oracle. Send that payload to the baseline or skill-enabled reviewer through the host's normal isolated task mechanism, save the returned JSON, then score it locally:
+
+```sh
+python3 evals/worker_review_harness.py prepare review-a > /tmp/review-a-input.json
+# Run the host reviewer with that input and save its JSON as /tmp/review-a-response.json.
+python3 evals/worker_review_harness.py score review-a /tmp/review-a-response.json
+```
+
+Run `review-a`, `review-b`, and `review-c` in randomized order for both comparison arms under the same model, tools, reasoning, and resource ceiling. The scorer checks exact scope and reviewed context, ordered criterion grades and evidence references, the complete confirmed-finding set, suggestion classification, human-decision boundaries, repair routing, missing-evidence disclosure, artifact immutability, and truthful test-execution claims. It rejects placeholder evidence and invented extra findings. A passing scorer result is case evidence for the existing paired-result schema; it is not by itself a universal performance claim.
 
 Do not compare hosts, models, or tool environments as though they were the same baseline. Publish methodology and raw or reviewable evidence with any public summary.

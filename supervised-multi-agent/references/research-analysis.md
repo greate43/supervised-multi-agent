@@ -11,6 +11,12 @@ Use this reference for factual research, comparisons, recommendations, investiga
 
 Use independent lanes only when they cover distinct questions or provide valuable corroboration.
 
+## Supervisor review gate
+
+Before accepting worker research or analysis, freeze the question, scope, freshness rule, comparison criteria, evidence ledger, calculations, and submitted synthesis. Trace every material conclusion to a valid source, dataset, or reproducible calculation; check that quotations and values preserve context; test units, assumptions, conflicts, uncertainty, and the strongest credible alternative explanation. Do not accept source count, confident prose, or worker consensus as proof.
+
+Return `REPAIR_REQUIRED` for unsupported claims, stale or weak sources where stronger authority is required, calculation errors, omitted material conflicts, or recommendations that do not follow from the user's constraints. Return `BLOCKED` when decisive evidence or required specialist judgment is unavailable. Accept only when every required criterion passes with claim-level provenance and reproducible evidence; keep judgment and unknowns labeled rather than converting them into facts.
+
 ## Quality gate
 
 Define the decision or question, scope, freshness requirements, source hierarchy, comparison criteria, and uncertainty standard. Prefer primary and authoritative sources when available. Distinguish sourced fact, calculation, inference, judgment, and unknown.

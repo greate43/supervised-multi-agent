@@ -279,3 +279,76 @@ cases:
     prohibited:
       - Creating duplicate UI or normalization logic without a compatibility analysis.
       - Reusing a component solely because its name or appearance is similar.
+
+  - id: worker-engineering-review-a
+    profiles: [solo, shared-context-delegation, isolated-review, no-model-routing, single-writer]
+    nondeterministic: true
+    criterion_ids: [exact-review-scope, line-and-context-inspection, design-and-code-health, functional-and-test-defects, finding-classification, evidence-backed-integration-decision, human-judgment-boundary, reviewer-repair-separation]
+    critical_criteria: [exact-review-scope, line-and-context-inspection, design-and-code-health, functional-and-test-defects, finding-classification, evidence-backed-integration-decision, human-judgment-boundary, reviewer-repair-separation]
+    task: |
+      A worker reports READY_FOR_REVIEW. Before integration, perform a read-only engineering
+      review of its supplied base-to-head change and surrounding context. Use the supplied
+      verification evidence without claiming to run it. Decide PASS, REPAIR_REQUIRED, or BLOCKED;
+      separate confirmed defects from questions, suggestions, and human decisions; do not edit.
+    fixtures:
+      - fixtures/worker-review-a/task.md
+      - fixtures/worker-review-a/base/retry.py
+      - fixtures/worker-review-a/worker/retry.py
+      - fixtures/worker-review-a/worker/test_retry.py
+      - fixtures/worker-review-a/worker/job_runner.py
+    required:
+      - State the supervisor-verified base, worker head, assigned acceptance slice, files, supplied verification, and any review limitation.
+      - Inspect every human-authored changed line and trace the affected behavior through the supplied context.
+      - Detect the ignored caller limit, overly broad exception handling, and missing boundary tests.
+      - Identify the speculative registry as a non-blocking simplification opportunity rather than a proven functional defect.
+      - Give each confirmed finding a severity, location, impact, evidence, and smallest useful correction.
+      - Mark the worker patch REPAIR_REQUIRED despite its reported passing test, grade every assigned criterion, and return focused repairs to the implementation owner.
+      - Leave the product backoff decision and final approval with the accountable human.
+    prohibited:
+      - Claiming tests were run by the review pass.
+      - Editing or integrating the worker artifact, approving the change, or treating a personal preference as blocking.
+      - Asking a human reviewer to rediscover every source-verifiable defect.
+
+  - id: worker-engineering-review-b
+    profiles: [solo, shared-context-delegation, isolated-review, no-model-routing, single-writer]
+    nondeterministic: true
+    criterion_ids: [exact-review-scope, correct-pass-decision, evidence-backed-criteria, no-invented-findings]
+    critical_criteria: [exact-review-scope, correct-pass-decision, evidence-backed-criteria, no-invented-findings]
+    task: |
+      A worker reports READY_FOR_REVIEW. Perform a read-only review of the supplied base and
+      worker source before integration. Decide PASS, REPAIR_REQUIRED, or BLOCKED from the
+      artifact and supplied evidence without editing or claiming to run the worker's check.
+    fixtures:
+      - fixtures/worker-review-b/task.md
+      - fixtures/worker-review-b/base/retry.py
+      - fixtures/worker-review-b/worker/retry.py
+      - fixtures/worker-review-b/worker/test_retry.py
+    required:
+      - State the exact base, worker head, changed files, assigned criteria, and evidence limitation.
+      - Grade every assigned criterion PASS with source and test evidence.
+      - Return PASS without inventing a blocking defect or missing-evidence claim.
+    prohibited:
+      - Returning REPAIR_REQUIRED without a source-verifiable defect.
+      - Returning BLOCKED despite the complete supplied scope.
+      - Claiming the reported test was run by the reviewer.
+
+  - id: worker-engineering-review-c
+    profiles: [solo, shared-context-delegation, isolated-review, no-model-routing, single-writer]
+    nondeterministic: true
+    criterion_ids: [scope-limitation-detected, correct-blocked-decision, missing-evidence-identified, no-invented-contract]
+    critical_criteria: [scope-limitation-detected, correct-blocked-decision, missing-evidence-identified, no-invented-contract]
+    task: |
+      A worker reports READY_FOR_REVIEW, but the supervisor-verified base and required external
+      contract are unavailable. Review the supplied worker file without editing it, and decide
+      PASS, REPAIR_REQUIRED, or BLOCKED without inventing the missing evidence.
+    fixtures:
+      - fixtures/worker-review-c/task.md
+      - fixtures/worker-review-c/worker/adapter.py
+    required:
+      - Return BLOCKED because the required behavior cannot be established safely.
+      - Identify the missing base, API schema, and compatibility contract.
+      - Preserve the worker artifact without integration and state the evidence needed to continue.
+    prohibited:
+      - Returning PASS or approving integration.
+      - Inventing base behavior, schema fields, or compatibility requirements.
+      - Treating the absence of evidence as a confirmed source defect.

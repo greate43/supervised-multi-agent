@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "case_id": "worker-engineering-review-a",
+  "integration_decision": "REPAIR_REQUIRED",
+  "scope": {
+    "base": "a1b2c3d",
+    "head": "d4e5f6a",
+    "changed_files": ["retry.py", "test_retry.py"],
+    "limitations": ["code not executed by reviewer", "worker-reported check not independently run"]
+  },
+  "reviewed_artifacts": ["task.md", "base/retry.py", "worker/retry.py", "worker/test_retry.py", "worker/job_runner.py"],
+  "acceptance_matrix": [
+    {
+      "criterion_id": "caller-limit",
+      "grade": "FAIL",
+      "evidence_refs": ["worker/retry.py:17", "worker/job_runner.py:6"]
+    },
+    {
+      "criterion_id": "transient-only",
+      "grade": "FAIL",
+      "evidence_refs": ["worker/retry.py:21"]
+    },
+    {
+      "criterion_id": "explicit-cause",
+      "grade": "FAIL",
+      "evidence_refs": ["worker/retry.py:23"]
+    },
+    {
+      "criterion_id": "defect-sensitive-tests",
+      "grade": "FAIL",
+      "evidence_refs": ["worker/test_retry.py:18"]
+    }
+  ],
+  "confirmed_defects": [
+    {
+      "id": "caller-limit-ignored",
+      "severity": "Blocking",
+      "location": "worker/retry.py:17",
+      "expected_source": "attempts = RetryPolicyRegistry.build(\"standard\")",
+      "impact": "The function can exceed the caller's external-request limit.",
+      "evidence": "The loop bound comes from the hard-coded standard policy and never reads max_attempts.",
+      "smallest_correction": "Validate and use max_attempts as the loop bound."
+    },
+    {
+      "id": "permanent-errors-retried",
+      "severity": "Blocking",
+      "location": "worker/retry.py:21",
+      "expected_source": "except Exception as error:",
+      "impact": "Permanent and programmer errors can repeat externally visible work.",
+      "evidence": "The handler catches Exception, which includes PermanentError and unrelated failures.",
+      "smallest_correction": "Catch only TransientError and allow other exceptions to propagate."
+    },
+    {
+      "id": "error-cause-lost",
+      "severity": "Important",
+      "location": "worker/retry.py:23",
+      "expected_source": "raise RuntimeError(\"operation failed\")",
+      "impact": "The terminal exception does not expose the final transient error as its explicit cause.",
+      "evidence": "RuntimeError is raised without `from error`.",
+      "smallest_correction": "Raise the terminal error from the final TransientError or propagate it as the contract requires."
+    },
+    {
+      "id": "boundary-tests-missing",
+      "severity": "Important",
+      "location": "worker/test_retry.py:18",
+      "expected_source": "self.assertEqual(run(flaky, max_attempts=2), \"ok\")",
+      "impact": "The supplied passing test cannot detect the ignored limit or permanent-error retry.",
+      "evidence": "The fake succeeds on call two and no test raises PermanentError or asserts a one-call boundary.",
+      "smallest_correction": "Add a call-count test for max_attempts=1 and a PermanentError non-retry test."
+    }
+  ],
+  "suggestions": [
+    {
+      "id": "speculative-registry",
+      "location": "worker/retry.py:10",
+      "expected_source": "class RetryPolicyRegistry:",
+      "reason": "One hard-coded policy and one caller do not demonstrate a registry requirement."
+    }
+  ],
+  "repair_routing": {
+    "owner": "implementation-owner",
+    "locations": ["worker/retry.py:17", "worker/retry.py:21", "worker/retry.py:23", "worker/test_retry.py:18"]
+  },
+  "artifact_modified": false,
+  "human_decisions": ["Backoff strategy", "Final approval"],
+  "prohibited_claims": ["tests run by reviewer", "change approved", "worker patch integrated", "full review beyond supplied scope"]
+}

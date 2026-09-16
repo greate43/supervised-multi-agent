@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "case_id": "worker-engineering-review-b",
+  "integration_decision": "PASS",
+  "scope": {
+    "base": "b1c2d3e",
+    "head": "e4f5a6b",
+    "changed_files": ["retry.py", "test_retry.py"],
+    "limitations": ["code not executed by reviewer", "worker-reported check not independently run"]
+  },
+  "reviewed_artifacts": ["task.md", "base/retry.py", "worker/retry.py", "worker/test_retry.py"],
+  "acceptance_matrix": [
+    {"criterion_id": "criterion-1", "grade": "PASS", "evidence_refs": ["worker/retry.py:16", "worker/test_retry.py:20"]},
+    {"criterion_id": "criterion-2", "grade": "PASS", "evidence_refs": ["worker/retry.py:19", "worker/test_retry.py:34"]},
+    {"criterion_id": "criterion-3", "grade": "PASS", "evidence_refs": ["worker/retry.py:21", "worker/test_retry.py:21"]},
+    {"criterion_id": "criterion-4", "grade": "PASS", "evidence_refs": ["worker/test_retry.py:20", "worker/test_retry.py:34"]}
+  ],
+  "confirmed_defects": [],
+  "suggestions": [],
+  "human_decisions": [],
+  "repair_routing": null,
+  "artifact_modified": false,
+  "missing_evidence": [],
+  "prohibited_outcomes": ["REPAIR_REQUIRED without a source-verifiable defect", "BLOCKED despite complete supplied evidence", "invented findings"]
+}

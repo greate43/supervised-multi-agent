@@ -12,6 +12,12 @@ Use this reference for editing, reviewing, localizing, captioning, mixing, or ex
 
 Assign one owner to each timeline or project file. Other workers should produce read-only notes or separate artifacts unless isolated project copies can be merged safely. Keep source media immutable.
 
+## Supervisor review gate
+
+Before accepting a material timeline, audio, caption, localization, graphics, or export change, freeze the brief, source and rights ledger, prior verified project revision, changed project or timeline revision, and worker-reported checks. Inspect the changed time ranges plus dependent transitions, overlays, audio, captions, and delivery settings. Review the rendered output—not only the edit plan or timeline—whenever the criterion concerns final picture, sound, captions, sync, encoding, or start-to-finish playback. A successful render is not evidence that the edit is editorially correct or technically deliverable.
+
+Grade applicable criteria against time-coded or artifact evidence. Return `REPAIR_REQUIRED` for a missed brief requirement, continuity or meaning damage, visual or audio defect, caption or accessibility failure, incorrect delivery specification, or unresolved material quality issue. Return `BLOCKED` when required media, playback/render capability, rights, consent, disclosure, or accountable approval is unavailable. Accept only when every required criterion passes; subjective taste may guide optional suggestions but cannot masquerade as a defect without a brief, standard, or observable impact.
+
 ## Capability-aware editing and safe fallback
 
 Use only media tools the host actually exposes. A portable adapter may describe available inspection, transcription, scene or silence detection, edit-plan, timeline-mutation, render, and playback-verification capabilities, but must not imply that a named editor, render engine, or delivery integration exists.

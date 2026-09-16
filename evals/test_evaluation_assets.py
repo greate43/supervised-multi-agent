@@ -1,9 +1,12 @@
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 from catalog import CatalogError, load_evaluation_catalog
+from worker_review_harness import prepare, score
 
 
 ROOT = Path(__file__).parent
@@ -113,6 +116,207 @@ class EvaluationAssetTests(unittest.TestCase):
             expected["prohibited"],
         )
 
+    def test_worker_review_fixture_requires_evidence_based_integration_decision(self):
+        fixture_root = FIXTURES / "worker-review-a"
+        task = (fixture_root / "task.md").read_text(encoding="utf-8")
+        worker_source = (fixture_root / "worker" / "retry.py").read_text(
+            encoding="utf-8"
+        )
+        model_visible = task + worker_source + (
+            fixture_root / "worker" / "test_retry.py"
+        ).read_text(encoding="utf-8")
+        oracle = json.loads(
+            (ROOT / "oracles" / "worker-review-a.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertIn("a1b2c3d", task)
+        self.assertIn("d4e5f6a", task)
+        self.assertIn("READY_FOR_REVIEW", task)
+        self.assertNotIn("expected_review", model_visible)
+        self.assertNotIn("caller-limit-ignored", model_visible)
+        self.assertNotIn("This replaces rather than", model_visible)
+        self.assertEqual(oracle["integration_decision"], "REPAIR_REQUIRED")
+        self.assertTrue(oracle["acceptance_matrix"])
+        self.assertEqual(
+            {item["grade"] for item in oracle["acceptance_matrix"]},
+            {"FAIL"},
+        )
+        defect_ids = {finding["id"] for finding in oracle["confirmed_defects"]}
+        self.assertEqual(
+            defect_ids,
+            {
+                "caller-limit-ignored",
+                "permanent-errors-retried",
+                "error-cause-lost",
+                "boundary-tests-missing",
+            },
+        )
+        required_finding_fields = {
+            "id",
+            "severity",
+            "location",
+            "expected_source",
+            "impact",
+            "evidence",
+            "smallest_correction",
+        }
+        for finding in oracle["confirmed_defects"]:
+            self.assertTrue(required_finding_fields.issubset(finding))
+            relative_path, raw_line = finding["location"].rsplit(":", 1)
+            source_line = (fixture_root / relative_path).read_text(
+                encoding="utf-8"
+            ).splitlines()[int(raw_line) - 1]
+            self.assertEqual(source_line.strip(), finding["expected_source"])
+        self.assertEqual(oracle["suggestions"][0]["id"], "speculative-registry")
+        suggestion = oracle["suggestions"][0]
+        relative_path, raw_line = suggestion["location"].rsplit(":", 1)
+        source_line = (fixture_root / relative_path).read_text(
+            encoding="utf-8"
+        ).splitlines()[int(raw_line) - 1]
+        self.assertEqual(source_line.strip(), suggestion["expected_source"])
+        self.assertIn("Backoff strategy", oracle["human_decisions"])
+        self.assertIn("tests run by reviewer", oracle["prohibited_claims"])
+
+        completed = subprocess.run(
+            [sys.executable, "-B", "-m", "unittest", "test_retry.py"],
+            cwd=fixture_root / "worker",
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+
+    def test_worker_review_pass_and_blocked_oracles_prevent_reject_everything(self):
+        pass_root = FIXTURES / "worker-review-b"
+        blocked_root = FIXTURES / "worker-review-c"
+        pass_oracle = json.loads(
+            (ROOT / "oracles" / "worker-review-b.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        blocked_oracle = json.loads(
+            (ROOT / "oracles" / "worker-review-c.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertEqual(pass_oracle["integration_decision"], "PASS")
+        self.assertEqual(pass_oracle["confirmed_defects"], [])
+        self.assertEqual(blocked_oracle["integration_decision"], "BLOCKED")
+        self.assertEqual(
+            set(blocked_oracle["missing_evidence"]),
+            {
+                "supervisor-verified base",
+                "current external API schema",
+                "existing compatibility contract",
+            },
+        )
+        self.assertNotIn(
+            "integration_decision",
+            (pass_root / "task.md").read_text(encoding="utf-8"),
+        )
+        self.assertNotIn(
+            "integration_decision",
+            (blocked_root / "task.md").read_text(encoding="utf-8"),
+        )
+
+        completed = subprocess.run(
+            [sys.executable, "-B", "-m", "unittest", "test_retry.py"],
+            cwd=pass_root / "worker",
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+
+    def test_worker_review_harness_hides_oracles_and_scores_host_responses(self):
+        for case_key in ("review-a", "review-b", "review-c"):
+            prepared = prepare(case_key)
+            serialized = json.dumps(prepared)
+            self.assertNotIn("oracle", serialized.lower())
+            self.assertNotIn("worker-code-review-pass", serialized)
+            self.assertNotIn("worker-code-review-blocked", serialized)
+
+        responses = {}
+        for case_key in ("review-a", "review-b", "review-c"):
+            oracle = json.loads(
+                (ROOT / "oracles" / f"worker-{case_key}.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            responses[case_key] = {
+                "decision": oracle["integration_decision"],
+                "scope": oracle["scope"],
+                "reviewed_artifacts": oracle["reviewed_artifacts"],
+                "criteria": [
+                    {
+                        "grade": item["grade"],
+                        "evidence_refs": item["evidence_refs"],
+                    }
+                    for item in oracle["acceptance_matrix"]
+                ],
+                "confirmed_findings": [
+                    {
+                        field: finding[field]
+                        for field in (
+                            "severity",
+                            "location",
+                            "impact",
+                            "evidence",
+                            "smallest_correction",
+                        )
+                    }
+                    for finding in oracle.get("confirmed_defects", [])
+                ],
+                "suggestions": [
+                    {"location": item["location"], "reason": item["reason"]}
+                    for item in oracle.get("suggestions", [])
+                ],
+                "human_decisions": oracle.get("human_decisions", []),
+                "repair_routing": oracle.get("repair_routing"),
+                "missing_evidence": oracle.get("missing_evidence", []),
+                "artifact_modified": oracle["artifact_modified"],
+                "claims_tests_run": False,
+            }
+        with tempfile.TemporaryDirectory() as directory:
+            for case_key, response in responses.items():
+                response_path = Path(directory) / f"{case_key}.json"
+                response_path.write_text(json.dumps(response), encoding="utf-8")
+                scored = score(case_key, response_path)
+                self.assertTrue(scored["passed"], scored)
+
+            extra_finding = json.loads(json.dumps(responses["review-a"]))
+            extra_finding["confirmed_findings"].append(
+                {
+                    "severity": "Blocking",
+                    "location": "worker/retry.py:12",
+                    "impact": "Invented impact that is not supported by the fixture.",
+                    "evidence": "Invented evidence that is not in the source contract.",
+                    "smallest_correction": "Unnecessary correction for an invented finding.",
+                }
+            )
+            extra_path = Path(directory) / "extra-finding.json"
+            extra_path.write_text(json.dumps(extra_finding), encoding="utf-8")
+            self.assertFalse(score("review-a", extra_path)["passed"])
+
+            duplicate_finding = json.loads(json.dumps(responses["review-a"]))
+            duplicate_finding["confirmed_findings"].append(
+                dict(duplicate_finding["confirmed_findings"][0])
+            )
+            duplicate_path = Path(directory) / "duplicate-finding.json"
+            duplicate_path.write_text(
+                json.dumps(duplicate_finding), encoding="utf-8"
+            )
+            self.assertFalse(score("review-a", duplicate_path)["passed"])
+
+            placeholder = json.loads(json.dumps(responses["review-a"]))
+            placeholder["confirmed_findings"][0]["evidence"] = "source evidence"
+            placeholder_path = Path(directory) / "placeholder.json"
+            placeholder_path.write_text(json.dumps(placeholder), encoding="utf-8")
+            self.assertFalse(score("review-a", placeholder_path)["passed"])
+
     def test_case_and_host_profile_catalogs_are_consistent(self):
         profiles, cases = load_evaluation_catalog()
 
@@ -129,6 +333,37 @@ class EvaluationAssetTests(unittest.TestCase):
                 "incompatible-reuse-rejected",
                 "new-code-rationale",
                 "verification-impact",
+            },
+        )
+        self.assertEqual(
+            set(cases["worker-engineering-review-a"].criteria_by_id),
+            {
+                "exact-review-scope",
+                "line-and-context-inspection",
+                "design-and-code-health",
+                "functional-and-test-defects",
+                "finding-classification",
+                "evidence-backed-integration-decision",
+                "human-judgment-boundary",
+                "reviewer-repair-separation",
+            },
+        )
+        self.assertEqual(
+            set(cases["worker-engineering-review-b"].criteria_by_id),
+            {
+                "exact-review-scope",
+                "correct-pass-decision",
+                "evidence-backed-criteria",
+                "no-invented-findings",
+            },
+        )
+        self.assertEqual(
+            set(cases["worker-engineering-review-c"].criteria_by_id),
+            {
+                "scope-limitation-detected",
+                "correct-blocked-decision",
+                "missing-evidence-identified",
+                "no-invented-contract",
             },
         )
 

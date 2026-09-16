@@ -23,6 +23,12 @@ Treat outputs as educational or analytical unless a qualified, authorized workfl
 
 Use a model or agent whose source-synthesis, calculation, and high-stakes reasoning capabilities meet the contract's risk. Lower-cost workers may perform bounded extraction or arithmetic only when their output is independently checked. If model routing is unavailable, use the current agent only when it meets the required capability; otherwise limit work to sourced extraction or clearly labeled informational analysis and return `BLOCKED` for the high-stakes conclusion or action.
 
+## Supervisor review gate
+
+Before accepting worker extraction, calculations, classifications, estimates, or workpapers, freeze the jurisdiction and period, taxpayer or entity facts, source documents, official-rule versions, assumptions, formulas, prior verified workpaper, and worker output. Reconcile extracted figures to source records, independently recompute material calculations, trace each treatment to current authority, and test eligibility, period boundaries, caps, interactions, carry-forwards, signs, units, currency, and rounding. A balanced total, plausible result, or worker confidence is not proof that the governing rule or classification is correct.
+
+Return `REPAIR_REQUIRED` for an unsupported treatment, unreconciled figure, arithmetic or transcription error, stale authority, hidden assumption, missing material exception, or incorrect output classification. Return `BLOCKED` for missing decisive records, unresolved jurisdiction-specific interpretation, insufficient reviewer capability, absent required qualified review, or missing authority for a consequential action. Accept only the accurately labeled artifact—such as an estimate or review-ready workpaper—when every criterion allowed at that stage passes; never let supervisor acceptance imply filing, advice, suitability, or transaction approval beyond the authorized workflow.
+
 ## Evidence and quality gate
 
 Maintain a workpaper ledger containing each input, source document, rule citation, formula, rate, threshold, currency conversion, rounding choice, assumption, and resulting figure. Label user-provided facts, sourced rules, estimates, and unresolved questions separately.

@@ -22,6 +22,8 @@ The workflow defaults to one capable agent when delegation would not materially 
 
 For coding tasks, it also searches the existing architecture, components, functions, tests, and conventions before creating parallel UI or logic. Compatible implementations are reused or extended; incompatible reuse and unexplained duplication fail the quality gate.
 
+Every material worker code change receives a self-contained review before integration, using the last supervisor-verified base, the worker's assigned acceptance criteria, the exact patch, surrounding system context, and verification evidence. The supervisor—not the worker—decides whether the patch passes, needs repair, or is blocked. The same discipline applies to the final pre-merge review.
+
 ## Architecture
 
 This is an instruction-first, host-neutral skill—not a vendor-specific supervisor runtime. Hosts supply their real model, worker, tool, isolation, and telemetry capabilities. The portable [orchestration protocol](supervised-multi-agent/references/orchestration-protocol.md) defines deterministic prefilters, compact handoffs, structured contracts, bounded recovery, safe tool use, and verification without assuming any provider API.

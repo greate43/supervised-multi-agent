@@ -13,6 +13,12 @@ Choose roles according to the work:
 
 For small pieces, combine roles but retain an independent final review when accuracy, persuasion, publication, or brand voice matters.
 
+## Supervisor review gate
+
+Before accepting a material worker draft or edit, freeze the canonical brief, source ledger, prior accepted revision, and worker artifact. Review the artifact itself rather than the worker's summary. Grade the applicable criteria for factual support, argument and structure, completeness, audience and purpose, preservation of meaning and voice, required style and format, originality, accessibility, grammar, and cross-reference consistency. Verify changed factual claims against their sources and inspect enough surrounding text to catch contradictions or damage outside the edited passage.
+
+Return `REPAIR_REQUIRED` when any required criterion fails, a material claim is unsupported, or an edit changes intended meaning; return `BLOCKED` when required sources, rights, subject-matter judgment, or accountable approval are unavailable. Accept only when every required criterion passes with artifact or source evidence. Keep optional stylistic preferences separate from defects.
+
 ## Quality gate
 
 Define audience, purpose, desired action, voice, format, length, required facts, prohibited claims, and source rules before drafting. Keep one canonical brief and outline.

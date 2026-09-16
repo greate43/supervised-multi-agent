@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "case_id": "worker-engineering-review-c",
+  "integration_decision": "BLOCKED",
+  "scope": {
+    "base": null,
+    "head": "f7a8b9c",
+    "changed_files": ["adapter.py"],
+    "limitations": ["supervisor-verified base unavailable", "external API schema unavailable", "compatibility contract unavailable"]
+  },
+  "reviewed_artifacts": ["task.md", "worker/adapter.py"],
+  "acceptance_matrix": [
+    {"criterion_id": "criterion-1", "grade": "BLOCKED", "evidence_refs": ["task.md:9", "worker/adapter.py:3"]},
+    {"criterion_id": "criterion-2", "grade": "BLOCKED", "evidence_refs": ["task.md:10", "worker/adapter.py:3"]},
+    {"criterion_id": "criterion-3", "grade": "BLOCKED", "evidence_refs": ["task.md:16", "worker/adapter.py:5"]}
+  ],
+  "confirmed_defects": [],
+  "suggestions": [],
+  "human_decisions": [],
+  "repair_routing": null,
+  "artifact_modified": false,
+  "blocked_criteria": ["existing-field-mapping", "current-schema-coverage", "unknown-field-compatibility"],
+  "missing_evidence": ["supervisor-verified base", "current external API schema", "existing compatibility contract"],
+  "prohibited_outcomes": ["PASS", "invented base behavior", "invented schema fields", "integration approval"]
+}

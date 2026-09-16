@@ -12,6 +12,21 @@ Use this reference for editing, reviewing, localizing, captioning, mixing, or ex
 
 Assign one owner to each timeline or project file. Other workers should produce read-only notes or separate artifacts unless isolated project copies can be merged safely. Keep source media immutable.
 
+## Capability-aware editing and safe fallback
+
+Use only media tools the host actually exposes. A portable adapter may describe available inspection, transcription, scene or silence detection, edit-plan, timeline-mutation, render, and playback-verification capabilities, but must not imply that a named editor, render engine, or delivery integration exists.
+
+Prefer the cheapest reliable evidence path before model judgment:
+
+1. Inspect available media metadata, transcript, waveform, contact sheet, scene boundaries, loudness, or preview with authorized read-only tools.
+2. Convert those observations into compact, time-coded edit-relevant notes: hook, story beats, dead air, repetition, filler, continuity, visual variety, dialogue clarity, captions, and rights signals.
+3. Use model reasoning for editorial decisions that need taste or synthesis: preserving meaning and creator voice, prioritizing important moments, pacing, emotional cadence, graphics, caption phrasing, and a clear call to action.
+4. Let the authorized timeline owner apply changes, then verify the changed timecodes and final render.
+
+If editing or render tools are unavailable, produce a review-ready time-coded EDL, cut list, caption/script change list, or clearly labeled proposed command recipe. State that it is a plan rather than a completed edit; do not claim a render, export, sync, or final-quality verification occurred. Proposed FFmpeg or editor commands are drafts and require the normal mutation authority before they are run.
+
+Do not optimize by mechanically removing every pause, shortening every clip, or following a trend template. Preserve the intended meaning, creator voice, necessary context, accessibility, and significant moments; make each cut traceable to the brief or evidence.
+
 ## Efficient workflow
 
 1. Define audience, story goal, target duration, platform, reference style, aspect ratio, frame rate, resolution, codec, audio, captions, and delivery requirements.

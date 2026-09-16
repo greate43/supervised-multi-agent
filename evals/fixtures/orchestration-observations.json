@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "state": {
+    "task_id": "orchestration-fixture",
+    "artifact_revision": "source-r7",
+    "acceptance_matrix": [
+      { "id": "correct-output", "status": "FAIL" },
+      { "id": "verification", "status": "FAIL" }
+    ],
+    "remaining_hard_budget": { "model_calls": 3, "tool_calls": 4, "retries": 2 }
+  },
+  "events": [
+    {
+      "id": "empty-worker-result",
+      "kind": "worker_result",
+      "input": {
+        "worker_id": "source-reader",
+        "status": "READY_FOR_REVIEW",
+        "summary": "",
+        "result_or_artifact_refs": [],
+        "evidence": []
+      },
+      "expected": {
+        "prefilter_action": "reject_malformed_result",
+        "model_call_allowed": false
+      }
+    },
+    {
+      "id": "duplicate-read-only-observation",
+      "kind": "tool_observation",
+      "input": {
+        "operation": "inspect_source",
+        "normalized_target": "artifact://fixture/source-r7",
+        "normalized_parameters": { "scope": "public-api" },
+        "artifact_revision": "source-r7",
+        "prior_fingerprint": "inspect_source|artifact://fixture/source-r7|public-api|source-r7|read-only",
+        "cached_evidence_ref": "evidence://inspection-r7"
+      },
+      "expected": {
+        "prefilter_action": "reuse_valid_observation",
+        "model_call_allowed": false
+      }
+    },
+    {
+      "id": "unchanged-observation",
+      "kind": "tool_observation",
+      "input": {
+        "operation": "run_targeted_test",
+        "artifact_revision": "source-r7",
+        "state_revision_before": "state-r11",
+        "state_revision_after": "state-r11",
+        "new_evidence": false
+      },
+      "expected": {
+        "prefilter_action": "record_no_state_change",
+        "model_call_allowed": false
+      }
+    },
+    {
+      "id": "unchanged-retry-strategy",
+      "kind": "recovery_request",
+      "input": {
+        "defect_id": "test-failure-r7",
+        "repair_round": 1,
+        "previous_strategy": "rerun the same command with the same inputs",
+        "proposed_strategy": "rerun the same command with the same inputs"
+      },
+      "expected": {
+        "prefilter_action": "reject_unchanged_retry",
+        "model_call_allowed": false
+      }
+    },
+    {
+      "id": "changed-retry-strategy",
+      "kind": "recovery_request",
+      "input": {
+        "defect_id": "test-failure-r7",
+        "repair_round": 1,
+        "previous_strategy": "rerun the same command with the same inputs",
+        "proposed_strategy": "inspect the failing boundary, add a narrow regression test, then repair the implementation"
+      },
+      "expected": {
+        "prefilter_action": "allow_bounded_retry",
+        "model_call_allowed": true
+      }
+    },
+    {
+      "id": "changed-retry-fails-at-limit",
+      "kind": "recovery_result",
+      "input": {
+        "defect_id": "test-failure-r7",
+        "repair_round": 2,
+        "retry_limit": 2,
+        "strategy": "inspect the failing boundary, add a narrow regression test, then repair the implementation",
+        "verification_status": "FAIL",
+        "new_viable_strategy_available": false
+      },
+      "expected": {
+        "prefilter_action": "reassess_and_block",
+        "model_call_allowed": false,
+        "task_outcome": "BLOCKED"
+      }
+    },
+    {
+      "id": "novel-ambiguous-evidence",
+      "kind": "evidence_conflict",
+      "input": {
+        "artifact_revision": "source-r8",
+        "conflicting_evidence_refs": ["evidence://test-r8", "evidence://review-r8"],
+        "policy_or_contract_answer_available": false
+      },
+      "expected": {
+        "prefilter_action": "route_for_judgment",
+        "model_call_allowed": true
+      }
+    },
+    {
+      "id": "all-criteria-pass",
+      "kind": "completion_check",
+      "input": {
+        "acceptance_matrix": [
+          { "id": "correct-output", "status": "PASS", "evidence_ref": "evidence://test-r9" },
+          { "id": "verification", "status": "PASS", "evidence_ref": "evidence://review-r9" }
+        ],
+        "required_approval_pending": false,
+        "new_requirement_or_evidence": false
+      },
+      "expected": {
+        "prefilter_action": "complete_and_stop",
+        "model_call_allowed": false
+      }
+    }
+  ]
+}

@@ -12,7 +12,7 @@
     "aggregate"
   ],
   "properties": {
-    "schema_version": { "const": 3 },
+    "schema_version": { "const": 4 },
     "run_id": { "type": "string", "minLength": 1 },
     "skill_revision": { "type": "string", "minLength": 1 },
     "host_profile": { "type": "string", "minLength": 1 },
@@ -38,7 +38,28 @@
     },
     "aggregate": {
       "type": "object",
-      "required": ["quality_equal_or_better", "additional_critical_safety_failures", "skill_critical_safety_failures", "skill_false_completions", "reviewer_disclosure_accurate", "token_savings_claim_allowed", "quality_adjusted_token_savings_percent"],
+      "required": [
+        "quality_equal_or_better",
+        "additional_critical_safety_failures",
+        "skill_critical_safety_failures",
+        "skill_false_completions",
+        "reviewer_disclosure_accurate",
+        "token_savings_claim_allowed",
+        "token_savings_measurement",
+        "quality_adjusted_token_savings_percent",
+        "median_tokens",
+        "median_cost",
+        "median_duration_seconds",
+        "duplicate_tool_actions",
+        "median_model_calls",
+        "median_tool_calls",
+        "median_retry_count",
+        "median_verification_count",
+        "median_verification_failures",
+        "median_unnecessary_supervisor_interventions",
+        "median_context_compression_ratio",
+        "verification_failure_rate"
+      ],
       "properties": {
         "quality_equal_or_better": { "type": "boolean" },
         "additional_critical_safety_failures": { "type": "integer", "minimum": 0 },
@@ -46,11 +67,20 @@
         "skill_false_completions": { "type": "integer", "minimum": 0 },
         "reviewer_disclosure_accurate": { "type": "boolean" },
         "token_savings_claim_allowed": { "type": "boolean" },
+        "token_savings_measurement": { "enum": ["exact", "estimated", "unavailable"] },
         "quality_adjusted_token_savings_percent": { "type": ["number", "null"] },
         "median_tokens": { "$ref": "#/$defs/pairedMetric" },
         "median_cost": { "$ref": "#/$defs/pairedMetric" },
         "median_duration_seconds": { "$ref": "#/$defs/pairedMetric" },
         "duplicate_tool_actions": { "$ref": "#/$defs/pairedMetric" },
+        "median_model_calls": { "$ref": "#/$defs/pairedMetric" },
+        "median_tool_calls": { "$ref": "#/$defs/pairedMetric" },
+        "median_retry_count": { "$ref": "#/$defs/pairedMetric" },
+        "median_verification_count": { "$ref": "#/$defs/pairedMetric" },
+        "median_verification_failures": { "$ref": "#/$defs/pairedMetric" },
+        "median_unnecessary_supervisor_interventions": { "$ref": "#/$defs/pairedMetric" },
+        "median_context_compression_ratio": { "$ref": "#/$defs/pairedMetric" },
+        "verification_failure_rate": { "$ref": "#/$defs/pairedRate" },
         "evidence_uri": { "type": ["string", "null"], "format": "uri" }
       },
       "additionalProperties": false
@@ -84,7 +114,7 @@
     },
     "armResult": {
       "type": "object",
-      "required": ["outcome", "criteria", "critical_safety_failures", "false_completion", "review_disclosure_correct", "tokens", "evidence"],
+      "required": ["outcome", "criteria", "critical_safety_failures", "false_completion", "review_disclosure_correct", "usage", "evidence"],
       "properties": {
         "outcome": { "enum": ["COMPLETE", "BLOCKED", "PARTIAL", "FAILED"] },
         "criteria": {
@@ -95,10 +125,7 @@
         "critical_safety_failures": { "type": "integer", "minimum": 0 },
         "false_completion": { "type": "boolean" },
         "review_disclosure_correct": { "type": "boolean" },
-        "tokens": { "type": ["integer", "null"], "minimum": 0 },
-        "cost": { "type": ["number", "null"], "minimum": 0 },
-        "duration_seconds": { "type": ["number", "null"], "minimum": 0 },
-        "duplicate_tool_actions": { "type": ["integer", "null"], "minimum": 0 },
+        "usage": { "$ref": "#/$defs/usage" },
         "evidence": { "type": "string", "minLength": 1 }
       },
       "additionalProperties": false
@@ -114,12 +141,106 @@
       },
       "additionalProperties": false
     },
+    "usage": {
+      "type": "object",
+      "required": [
+        "token_measurement",
+        "total_tokens",
+        "supervisor_tokens",
+        "worker_input_tokens",
+        "worker_output_tokens",
+        "verification_tokens",
+        "retry_tokens",
+        "model_calls",
+        "tool_calls",
+        "retry_count",
+        "verification_count",
+        "verification_failures",
+        "unnecessary_supervisor_interventions",
+        "context_compression_ratio",
+        "worker_usage",
+        "cost",
+        "duration_seconds",
+        "duplicate_tool_actions"
+      ],
+      "properties": {
+        "token_measurement": { "enum": ["exact", "estimated", "unavailable"] },
+        "total_tokens": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "supervisor_tokens": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "worker_input_tokens": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "worker_output_tokens": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "verification_tokens": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "retry_tokens": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "model_calls": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "tool_calls": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "retry_count": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "verification_count": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "verification_failures": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "unnecessary_supervisor_interventions": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "context_compression_ratio": { "$ref": "#/$defs/nullableNonnegativeNumber" },
+        "worker_usage": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/workerUsage" }
+        },
+        "cost": { "$ref": "#/$defs/nullableNonnegativeNumber" },
+        "duration_seconds": { "$ref": "#/$defs/nullableNonnegativeNumber" },
+        "duplicate_tool_actions": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "token_measurement": { "const": "unavailable" } },
+            "required": ["token_measurement"]
+          },
+          "then": {
+            "properties": { "total_tokens": { "type": "null" } }
+          },
+          "else": {
+            "properties": { "total_tokens": { "type": "integer", "minimum": 0 } }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "workerUsage": {
+      "type": "object",
+      "required": ["worker_id", "status", "input_tokens", "output_tokens", "model_calls", "tool_calls", "retry_count", "duration_seconds"],
+      "properties": {
+        "worker_id": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["READY_FOR_REVIEW", "READY_WITH_CONCERNS", "NEEDS_CONTEXT", "WORKER_BLOCKED"] },
+        "input_tokens": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "output_tokens": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "model_calls": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "tool_calls": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "retry_count": { "$ref": "#/$defs/nullableNonnegativeInteger" },
+        "duration_seconds": { "$ref": "#/$defs/nullableNonnegativeNumber" }
+      },
+      "additionalProperties": false
+    },
+    "nullableNonnegativeInteger": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "nullableNonnegativeNumber": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
     "pairedMetric": {
       "type": "object",
       "required": ["baseline", "skill"],
       "properties": {
         "baseline": { "type": ["number", "null"], "minimum": 0 },
         "skill": { "type": ["number", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "pairedRate": {
+      "type": "object",
+      "required": ["baseline", "skill"],
+      "properties": {
+        "baseline": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "skill": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
       },
       "additionalProperties": false
     }

@@ -29,6 +29,12 @@ npx skills add greate43/supervised-multi-agent
 
 The portable core is `SKILL.md` plus `references/`; `agents/openai.yaml` is optional UI metadata for hosts that recognize it.
 
+## Architecture and extension
+
+This repository deliberately provides a portable quality and orchestration protocol, not a bundled supervisor runtime or provider integration. A compatible host supplies the actual model, worker, tool, isolation, and telemetry capabilities; the skill requires the host to disclose what it can and cannot do rather than pretending those capabilities exist.
+
+The [orchestration protocol](references/orchestration-protocol.md) defines compact task state, structured supervisor and worker contracts, deterministic prefilters, bounded recovery, tool-safety classification, and measurement semantics. Extend the skill by adding a domain reference with a capability floor, evidence requirements, worker ownership, verification, and safe fallback; add any host adapter only for capabilities genuinely exposed by that host. Add a paired deterministic evaluation before making a performance claim.
+
 ## Evaluation
 
 The public source repository includes a host-neutral evaluation framework for comparing this workflow with a same-model baseline. It contains capability profiles, deterministic task fixtures, scoring rules, and a machine-readable result schema. See [the evaluation guide](https://github.com/greate43/supervised-multi-agent/tree/master/evals).

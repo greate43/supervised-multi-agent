@@ -45,7 +45,7 @@ The checker validates the selected profile against this catalog and verifies tha
 
 [cases.yaml](cases.yaml) contains deterministic task briefs, required and prohibited outcomes, and model-visible fixture paths. Hidden scorer oracles live under `oracles/` and must never be included in an evaluated arm's prompt or workspace. The fixtures avoid credentials, live accounts, destructive actions, and live-market or legal data. Host adapters may translate the case format but must preserve the task, conditions, and scoring rules.
 
-The included cases cover solo scope control, parallel research, coupled code, explicit ceilings, untrusted instructions, high-stakes capability limits, consequential mutations, video rights or consent, deterministic prefiltering, bounded recovery, compact handoffs, verification that catches defects, conditional review or approval, safe video fallback when editing tools are unavailable, architecture-aware reuse before new UI or logic is created, and evidence-based supervisor review that distinguishes defective, acceptable, and unverifiable worker code without exposing scorer oracles.
+The included cases cover solo scope control, parallel research, coupled code, explicit ceilings, untrusted instructions, high-stakes capability limits, consequential mutations, video rights or consent, deterministic prefiltering, repository-native coding quality gates, bounded recovery, compact handoffs, verification that catches defects, conditional review or approval, safe video fallback when editing tools are unavailable, architecture-aware reuse before new UI or logic is created, and evidence-based supervisor review that distinguishes defective, acceptable, and unverifiable worker code without exposing scorer oracles.
 
 Case nondeterminism, canonical criterion IDs, and criticality are controlled by [cases.yaml](cases.yaml), not by a submitted result. A result must repeat those declarations exactly; the checker rejects attempts to lower the repeat count or substitute easier criteria.
 
@@ -82,6 +82,18 @@ Suggested aggregate measures:
 - Median cost, duration, and duplicate tool actions
 
 The deterministic fixture integrity tests also run with the command above. They verify protocol assets and hidden-oracle separation; they do not substitute for running a host adapter, scoring actual reviewer output against the hidden oracle, or prove that a host uses the skill correctly.
+
+### Coding quality-gate behavioral adapter
+
+The coding quality-gate case has a neutral prepare/score interface. `prepare` emits the concrete worker contract, repository-declared gates, worker results, and response contract, but never the expected routing decisions. After running that payload through the baseline or skill-enabled host, score the response locally:
+
+```sh
+python3 evals/quality_gate_harness.py prepare > /tmp/quality-gate-input.json
+# Run the host with that input and save its JSON response.
+python3 evals/quality_gate_harness.py score /tmp/quality-gate-response.json
+```
+
+Its hidden oracle checks quality-at-source briefing, worker self-review, complete check evidence, deterministic rejection of failed, missing, or stale gates, protection against unauthorized rule weakening, focused repair routing, and the boundary between passing prechecks and actual engineering review. The fixture uses Android-style gate names as one concrete scenario; the evaluated policy remains project- and ecosystem-neutral.
 
 ### Worker-review behavioral adapter
 

@@ -6,6 +6,8 @@ import unittest
 from pathlib import Path
 
 from catalog import CatalogError, load_evaluation_catalog
+from quality_gate_harness import prepare as prepare_quality_gates
+from quality_gate_harness import score as score_quality_gates
 from worker_review_harness import prepare, score
 
 
@@ -44,6 +46,153 @@ class EvaluationAssetTests(unittest.TestCase):
             "BLOCKED",
         )
         self.assertFalse(events["all-criteria-pass"]["expected"]["model_call_allowed"])
+
+    def test_coding_quality_gate_fixture_rejects_bad_ready_states_before_review(self):
+        fixture = load_fixture("coding-quality-gates.json")
+        gates = {gate["id"]: gate for gate in fixture["repository_quality_gates"]}
+        events = {event["id"]: event for event in fixture["events"]}
+
+        contract = fixture["worker_contract"]
+        for field in (
+            "acceptance_slice",
+            "architecture_constraints",
+            "conventions",
+            "risk_areas",
+            "assigned_gate_ids",
+        ):
+            self.assertTrue(contract[field])
+        self.assertTrue(contract["self_review_required"])
+        self.assertEqual(gates["static-analysis"]["tool_label"], "detekt")
+        self.assertEqual(gates["platform-lint"]["tool_label"], "android-lint")
+        self.assertEqual(set(contract["assigned_gate_ids"]), set(gates))
+
+        acceptance_ids = {item["id"] for item in contract["acceptance_slice"]}
+        risk_ids = {item["id"] for item in contract["risk_areas"]}
+        required_worker_fields = {
+            "status",
+            "summary",
+            "result_or_artifact_refs",
+            "evidence",
+            "self_review",
+            "checks_run",
+            "assumptions",
+            "issues_or_risks",
+            "confidence_and_limits",
+            "recommended_next_action",
+            "usage",
+        }
+
+        required_check_fields = {
+            "gate_id",
+            "command",
+            "scope",
+            "artifact_revision",
+            "result",
+            "evidence_ref",
+        }
+        for event_id, event in events.items():
+            if event_id == "missing-worker-self-review":
+                self.assertEqual(
+                    required_worker_fields - set(event), {"self_review"}
+                )
+                self.assertNotIn("self_review", event)
+            else:
+                self.assertTrue(required_worker_fields.issubset(event))
+                self.assertTrue(event["self_review"]["completed"])
+                self.assertEqual(
+                    event["self_review"]["artifact_revision"],
+                    fixture["artifact_revision"],
+                )
+                self.assertEqual(
+                    set(event["self_review"]["acceptance_criteria_inspected"]),
+                    acceptance_ids,
+                )
+                self.assertEqual(
+                    set(event["self_review"]["risk_areas_inspected"]),
+                    risk_ids,
+                )
+            self.assertEqual(event["status"], "READY_FOR_REVIEW")
+            for check in event["checks_run"]:
+                self.assertTrue(required_check_fields.issubset(check))
+
+        prepared = prepare_quality_gates()
+        serialized = json.dumps(prepared)
+        self.assertNotIn('"expected"', serialized)
+        self.assertNotIn("oracle", serialized.lower())
+        self.assertNotIn("route_exact_diagnostic_for_repair", serialized)
+
+    def test_coding_quality_gate_harness_scores_valid_and_adversarial_responses(self):
+        oracle = json.loads(
+            (ROOT / "oracles" / "coding-quality-gates.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        valid = {
+            "case_id": oracle["case_id"],
+            "decisions": [
+                {
+                    "event_id": item["event_id"],
+                    "action": item["action"],
+                    "model_call_allowed": item["model_call_allowed"],
+                    "may_proceed_to_review": item["may_proceed_to_review"],
+                    "task_complete": item["task_complete"],
+                    "rerun_gate_ids": item["rerun_gate_ids"],
+                    "missing_gate_ids": item["missing_gate_ids"],
+                    "stale_gate_ids": item["stale_gate_ids"],
+                    "evidence_refs": item["required_evidence_refs"],
+                    "reason": "Evidence-backed routing decision.",
+                }
+                for item in oracle["decisions"]
+            ],
+        }
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            valid_path = root / "valid.json"
+            valid_path.write_text(json.dumps(valid), encoding="utf-8")
+            self.assertTrue(score_quality_gates(valid_path)["passed"])
+
+            adversarial_changes = {
+                "failed-detekt": {"action": "proceed_to_engineering_review"},
+                "missing-lint": {"model_call_allowed": True},
+                "stale-check-evidence": {"may_proceed_to_review": True},
+                "unauthorized-rule-weakening": {
+                    "action": "proceed_to_engineering_review"
+                },
+                "missing-worker-self-review": {"may_proceed_to_review": True},
+                "all-current-checks-pass": {"task_complete": True},
+            }
+            for event_id, change in adversarial_changes.items():
+                response = json.loads(json.dumps(valid))
+                decision = next(
+                    item
+                    for item in response["decisions"]
+                    if item["event_id"] == event_id
+                )
+                decision.update(change)
+                response_path = root / f"invalid-{event_id}.json"
+                response_path.write_text(json.dumps(response), encoding="utf-8")
+                self.assertFalse(
+                    score_quality_gates(response_path)["passed"], event_id
+                )
+
+            malformed_values = (
+                ("integer-boolean", "model_call_allowed", 0),
+                (
+                    "duplicate-list-value",
+                    "rerun_gate_ids",
+                    ["static-analysis", "static-analysis"],
+                ),
+                ("nested-list-value", "rerun_gate_ids", [["static-analysis"]]),
+            )
+            for name, field, value in malformed_values:
+                response = json.loads(json.dumps(valid))
+                response["decisions"][0][field] = value
+                response_path = root / f"invalid-{name}.json"
+                response_path.write_text(json.dumps(response), encoding="utf-8")
+                scored = score_quality_gates(response_path)
+                self.assertFalse(scored["passed"], name)
+                self.assertTrue(scored["errors"], name)
 
     def test_context_fixture_preserves_required_context_and_excludes_sensitive_data(self):
         fixture = load_fixture("context-handoff.json")
@@ -323,6 +472,7 @@ class EvaluationAssetTests(unittest.TestCase):
         self.assertIn("solo", profiles)
         self.assertIn("isolated-review", profiles)
         self.assertIn("video-tool-fallback", cases)
+        self.assertIn("coding-quality-gate-prefilter", cases)
         self.assertTrue(cases["video-tool-fallback"].profiles.issubset(profiles))
         self.assertTrue(cases["video-tool-fallback"].nondeterministic)
         self.assertEqual(

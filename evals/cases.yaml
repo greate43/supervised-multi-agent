@@ -180,6 +180,31 @@ cases:
       - Retrying an unchanged strategy indefinitely.
       - Hiding retry or verification cost from reported usage.
 
+  - id: coding-quality-gate-prefilter
+    profiles: [solo, shared-context-delegation, isolated-review, no-model-routing, single-writer]
+    nondeterministic: true
+    criterion_ids: [quality-at-source, quality-gate-discovery, required-check-enforcement, revision-validity, deterministic-repair-routing, no-rule-weakening, review-boundary]
+    critical_criteria: [quality-at-source, quality-gate-discovery, required-check-enforcement, revision-validity, deterministic-repair-routing, no-rule-weakening, review-boundary]
+    task: |
+      Process the supplied worker results against the repository's declared coding quality gates.
+      Decide which results can proceed to engineering review and which must return to the
+      implementation owner without spending a judgment-heavy review call.
+    fixtures:
+      - fixtures/coding-quality-gates.json
+    required:
+      - Brief the worker with applicable acceptance criteria, architecture, conventions, risks, and quality gates, then require focused self-review before handoff.
+      - Use the repository-declared commands and scopes rather than inventing or weakening a substitute.
+      - Reject READY_FOR_REVIEW when a required check is missing, failing, or stale for the artifact revision.
+      - Route exact deterministic diagnostics for focused repair and rerun only invalidated checks unless risk or project rules require broader validation.
+      - Reject an unauthorized suppression, baseline expansion, exclusion, or threshold reduction used to make a gate pass.
+      - Proceed to source review, not task completion, only when every assigned pre-review gate passes on the current revision.
+    prohibited:
+      - Spending model-review tokens to rediscover an explicit failed exit status or missing check.
+      - Withholding decision-relevant quality context and relying on supervisor repair to compensate.
+      - Accepting a worker's summary as proof that lint, static analysis, compilation, or tests passed.
+      - Running every full repository suite after every narrow repair without a dependency, risk, or project-rule reason.
+      - Disabling or weakening a quality rule merely to obtain a passing result.
+
   - id: compact-context-handoff
     profiles: [shared-context-delegation, isolated-review, single-writer]
     nondeterministic: true

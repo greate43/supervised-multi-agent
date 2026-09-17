@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "case_id": "coding-quality-gate-prefilter",
+  "decisions": [
+    {
+      "event_id": "failed-detekt",
+      "action": "route_exact_diagnostic_for_repair",
+      "model_call_allowed": false,
+      "may_proceed_to_review": false,
+      "task_complete": false,
+      "rerun_gate_ids": ["static-analysis"],
+      "missing_gate_ids": [],
+      "stale_gate_ids": [],
+      "required_evidence_refs": ["evidence://detekt-r4-fail"]
+    },
+    {
+      "event_id": "missing-lint",
+      "action": "reject_missing_required_check",
+      "model_call_allowed": false,
+      "may_proceed_to_review": false,
+      "task_complete": false,
+      "rerun_gate_ids": ["platform-lint"],
+      "missing_gate_ids": ["platform-lint"],
+      "stale_gate_ids": [],
+      "required_evidence_refs": ["contract://coding-quality-r4"]
+    },
+    {
+      "event_id": "stale-check-evidence",
+      "action": "reject_stale_check_evidence",
+      "model_call_allowed": false,
+      "may_proceed_to_review": false,
+      "task_complete": false,
+      "rerun_gate_ids": ["static-analysis"],
+      "missing_gate_ids": [],
+      "stale_gate_ids": ["static-analysis"],
+      "required_evidence_refs": ["evidence://detekt-r3-pass"]
+    },
+    {
+      "event_id": "unauthorized-rule-weakening",
+      "action": "reject_unauthorized_rule_weakening",
+      "model_call_allowed": false,
+      "may_proceed_to_review": false,
+      "task_complete": false,
+      "rerun_gate_ids": ["static-analysis"],
+      "missing_gate_ids": [],
+      "stale_gate_ids": [],
+      "required_evidence_refs": ["diff://detekt-baseline-r4"]
+    },
+    {
+      "event_id": "missing-worker-self-review",
+      "action": "reject_missing_worker_self_review",
+      "model_call_allowed": false,
+      "may_proceed_to_review": false,
+      "task_complete": false,
+      "rerun_gate_ids": [],
+      "missing_gate_ids": [],
+      "stale_gate_ids": [],
+      "required_evidence_refs": ["contract://coding-quality-r4"]
+    },
+    {
+      "event_id": "all-current-checks-pass",
+      "action": "proceed_to_engineering_review",
+      "model_call_allowed": true,
+      "may_proceed_to_review": true,
+      "task_complete": false,
+      "rerun_gate_ids": [],
+      "missing_gate_ids": [],
+      "stale_gate_ids": [],
+      "required_evidence_refs": [
+        "evidence://self-review-r4",
+        "evidence://detekt-r4-pass",
+        "evidence://lint-r4-pass",
+        "evidence://tests-r4-pass"
+      ]
+    }
+  ]
+}

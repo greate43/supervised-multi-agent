@@ -16,7 +16,7 @@ The adapter may translate the protocol into host-native calls, but it may not in
 
 Before every model-directed decision, use the lowest-cost reliable layer that can answer it:
 
-1. **Deterministic prefilter:** validate structure, normalize identifiers, check required contract fields, compare artifact and state revisions, apply a cache, enforce budgets, and evaluate known stop or policy conditions.
+1. **Deterministic prefilter:** validate structure, normalize identifiers, check required contract fields and assigned check evidence, compare artifact and state revisions, apply a cache, enforce budgets, and evaluate known stop or policy conditions. Reject a ready result before model review when a required check is missing, failing, skipped without an accepted reason, or stale for the current artifact revision.
 2. **Read-only observation:** use an available, authorized tool to inspect the artifact, metadata, test output, source revision, render, transcript, or external state. Reuse a still-valid observation rather than repeating it.
 3. **Model judgment:** call a model only when ambiguity, synthesis, planning, novel transformation, risk assessment, or a changed strategy could materially affect the outcome.
 
@@ -62,7 +62,7 @@ Use a structured supervisor decision with: `action`, `reason`, `task_or_worker_i
 - `abort` — stop an unsafe, unauthorized, duplicate, or nonviable lane and preserve its evidence.
 - `complete` — end task work only after the core completion gate passes.
 
-Each worker result must include `status`, `summary`, `result_or_artifact_refs`, `evidence`, `checks_run`, `assumptions`, `issues_or_risks`, `confidence_and_limits`, `recommended_next_action`, and `usage`. Use only these statuses: `READY_FOR_REVIEW`, `READY_WITH_CONCERNS`, `NEEDS_CONTEXT`, and `WORKER_BLOCKED`. `usage` records available token, model-call, tool-call, retry, and elapsed-time data per worker; unavailable values stay unavailable rather than becoming zero. A ready status is a request for verification, never self-approval.
+Each worker result must include `status`, `summary`, `result_or_artifact_refs`, `evidence`, `self_review`, `checks_run`, `assumptions`, `issues_or_risks`, `confidence_and_limits`, `recommended_next_action`, and `usage`. `self_review` records the artifact revision, acceptance criteria and risk areas inspected, resolved findings, and any unresolved concern; it is producer quality control, never independent approval. For each assigned check, `checks_run` records its exact command or inspection, scope, artifact revision, result, and evidence reference; an unavailable field stays unavailable rather than being implied. Use only these statuses: `READY_FOR_REVIEW`, `READY_WITH_CONCERNS`, `NEEDS_CONTEXT`, and `WORKER_BLOCKED`. `usage` records available token, model-call, tool-call, retry, and elapsed-time data per worker; unavailable values stay unavailable rather than becoming zero. A ready status is a request for verification, never self-approval, and is malformed when required self-review evidence or an assigned required check is absent, failing, or stale.
 
 For measurement, retain a canonical per-task `total_tokens` when the host can provide it. Token categories may be unavailable, and `retry_tokens` is a subset used to expose recovery cost rather than an additive category. Count an `unnecessary_supervisor_intervention` only when the recorded contract, state, and valid evidence were already sufficient for the deterministic prefilter to choose a non-model action; do not count a necessary escalation simply because it later proves unproductive.
 
@@ -84,6 +84,8 @@ Classify a failed observation or worker result before retrying:
 | Completed acceptance matrix | Stop. Do not make extra model or tool calls without changed requirements or evidence. |
 
 After two failed repair rounds for the same defect, reassess the task. Continue only with new evidence or a materially different viable approach; otherwise return `BLOCKED`. Count retries separately from normal work so efficiency reporting cannot hide recovery cost.
+
+When deterministic tool output already identifies a quality failure, route that exact diagnostic and affected scope to the artifact owner without first asking a model to rediscover it. Rerun only checks invalidated by the repair, expanding to integration or broader gates when dependencies, project rules, or risk require it. Use model judgment for ambiguous causes, repair strategy, source quality, or conflicting evidence—not for reading a known failed exit status.
 
 ## Tool safety and verification
 

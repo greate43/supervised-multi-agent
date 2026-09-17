@@ -1,6 +1,6 @@
 # Coding and technical implementation
 
-Use this reference for source code, infrastructure, configuration, debugging, migrations, and technical documentation tied to implementation.
+Use this reference for source code, infrastructure, configuration, debugging, migrations, and technical documentation tied to implementation in any language, platform, repository type, or build system.
 
 ## Define coding quality before editing
 
@@ -9,6 +9,18 @@ Inspect the user request, host-designated repository instructions, architecture 
 Before introducing a new screen, component, function, service, data model, utility, configuration path, or interaction pattern, search the current architecture, design system, symbol index, adjacent features, and tests for equivalent or closely related behavior. Reuse or extend an existing implementation when its semantics, layer ownership, lifecycle or state model, accessibility, styling, API contract, and compatibility fit the request. Visual or name similarity alone is not enough: do not force reuse that changes unrelated behavior, crosses an ownership boundary, or increases coupling. When a parallel implementation is necessary, record the concrete incompatibility or architectural boundary that makes reuse unsafe, and avoid copying behavior that should remain centralized.
 
 Include the dimensions that apply: functional correctness, complete requested behavior, edge cases and failure handling, architecture and API contracts, type and data correctness, lifecycle and concurrency safety, backward compatibility and migrations, security and privacy, performance and resource use, accessibility and UX states, observability or analytics, maintainability, and documentation. Omit irrelevant dimensions; never omit a relevant one to save tokens.
+
+## Discover and enforce repository quality gates
+
+Before assigning implementation or editing code, discover the repository's real quality gates from host-designated project instructions, trusted build and CI configuration, maintained scripts, contribution guidance, and the affected modules. Record the exact command or inspection, required scope, expected evidence, and whether it is a worker pre-review check or a supervisor or integration check. Include only gates that apply to the change, such as formatting, lint or static analysis (for example Detekt or platform lint), type checking or compilation, relevant compiler warnings, focused tests, generated-code or API compatibility checks, security or accessibility checks, and broader regression suites required by risk or project rules. Tool names are illustrative, not dependencies: derive the gates from the actual project rather than assuming an ecosystem, inventing a universal command, or silently substituting a weaker check.
+
+Put the cheapest reliable, change-scoped gates in the implementer's contract. After its final edit and before `READY_FOR_REVIEW`, the implementer must run every assigned required gate that is safe and authorized, record the exact command or inspection, scope, artifact revision, result, and evidence reference, and repair failures before rerunning the invalidated checks. If a required gate cannot run or pass, the worker must report `READY_WITH_CONCERNS` or `WORKER_BLOCKED` with the diagnostic and attempted repair rather than presenting the code as review-ready.
+
+Before those checks, require a focused worker self-review of the final diff against its acceptance slice, affected callers and contracts, architecture and reuse decisions, failure paths, tests, and accidental unrelated changes. This is producer quality control, not independent approval. Keep it scoped and evidence-based so it prevents obvious defects without duplicating the supervisor's independent source review.
+
+The supervisor must prefilter worker results before spending judgment-heavy review tokens. Missing results, nonzero or failing results, results from an older artifact revision, unexplained skipped checks, and relevant unresolved warnings reject `READY_FOR_REVIEW` and route the exact diagnostics to the implementation owner. Once the assigned deterministic gates pass on the current revision, continue with source review and the risk-appropriate supervisor, integration, or broader checks; deterministic success does not prove design quality or complete the task. Independently rerun or otherwise validate material check evidence when project rules, risk, worker trust, or integration changes require it.
+
+Do not make a gate pass by disabling a rule, adding an unjustified suppression, weakening a threshold, expanding a baseline, excluding changed code, hiding warnings, or mass-reformatting unrelated files. Treat any such change as part of the reviewed artifact and require explicit technical justification plus any authorization demanded by project rules. Distinguish failures introduced by the change from verified pre-existing failures, but never accept a newly introduced failure; handle pre-existing failures according to the repository's stated completion policy and disclose their evidence.
 
 ## Team shape
 
@@ -20,6 +32,8 @@ Choose only useful roles:
 - Independent reviewer: check specification compliance, correctness, regressions, maintainability, and risk.
 
 Prefer one implementer for tightly coupled files. For parallel implementation, use isolated workspaces or non-overlapping ownership and define integration points before edits begin.
+
+Brief each implementer with the applicable architecture, nearby reusable patterns, complete acceptance slice, coding and testing conventions, known risk areas, and discovered quality gates before it writes code. Use a worker whose capability matches the coupling and consequence of the slice; a lower-cost worker is efficient only when it can produce review-ready work reliably. Do not save handoff tokens by withholding constraints that would predictably create review and repair rounds.
 
 ## Worker and pre-merge engineering review
 
@@ -37,7 +51,7 @@ Keep the reviewer from editing the primary artifact or inheriting the implemente
 
 ## Quality gate
 
-Implement the complete requested behavior, not merely scaffolding, examples, unfinished markers, or a proposed patch. Inspect the final diff for avoidable duplicate UI, logic, data models, utilities, or architectural paths; verify that each reuse, extension, or new-implementation decision matches the discovered contracts. Directly exercise the changed behavior when possible. Run the smallest reliable checks that prove the change: focused tests first, then compilation, static analysis, integration, UI, performance, security, accessibility, migration, or broader regression checks when the risk warrants them or project instructions require them.
+Implement the complete requested behavior, not merely scaffolding, examples, unfinished markers, or a proposed patch. Inspect the final diff for avoidable duplicate UI, logic, data models, utilities, or architectural paths; verify that each reuse, extension, or new-implementation decision matches the discovered contracts. Directly exercise the changed behavior when possible. Run the discovered quality gates in the cheapest reliable order: focused checks first, then compilation, static analysis, integration, UI, performance, security, accessibility, migration, or broader regression checks when the risk warrants them or project instructions require them.
 
 Before running repository-controlled commands, hooks, plugins, build logic, or downloaded dependencies in an unfamiliar or untrusted project, inspect the relevant execution entry points. Prefer a sandbox with credentials removed and network, filesystem, and host access minimized. If adequate isolation is unavailable and execution could expose secrets or affect systems outside the task, obtain required approval or return `BLOCKED`; do not run it merely to satisfy validation.
 

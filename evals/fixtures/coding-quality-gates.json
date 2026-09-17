@@ -1,0 +1,363 @@
+{
+  "schema_version": 1,
+  "artifact_revision": "change-r4",
+  "worker_contract": {
+    "evidence_ref": "contract://coding-quality-r4",
+    "acceptance_slice": [
+      {
+        "id": "complete-behavior",
+        "criterion": "The changed feature behavior is complete and covered by focused tests."
+      },
+      {
+        "id": "quality-gates-pass",
+        "criterion": "No changed code introduces a formatter, static-analysis, lint, compiler, or test failure."
+      },
+      {
+        "id": "intentional-diff",
+        "criterion": "The final diff contains no unrelated changes or unjustified quality-rule exceptions."
+      }
+    ],
+    "architecture_constraints": [
+      "Keep the implementation within the existing feature boundary.",
+      "Reuse established feature patterns and do not move business logic into UI rendering."
+    ],
+    "conventions": [
+      "Use the repository-declared Gradle tasks for verification.",
+      "Do not use suppressions, exclusions, baselines, or weaker thresholds to hide new findings."
+    ],
+    "risk_areas": [
+      {
+        "id": "stale-verification",
+        "description": "Verification may become stale after the final edit."
+      },
+      {
+        "id": "quality-rule-weakening",
+        "description": "Quality configuration may be weakened to hide findings."
+      },
+      {
+        "id": "unrelated-diff",
+        "description": "The change may include unrelated diff noise."
+      }
+    ],
+    "assigned_gate_ids": [
+      "static-analysis",
+      "platform-lint",
+      "focused-tests"
+    ],
+    "self_review_required": true
+  },
+  "repository_quality_gates": [
+    {
+      "id": "static-analysis",
+      "tool_label": "detekt",
+      "command": "./gradlew :feature:detekt",
+      "scope": "changed feature module",
+      "required_before_review": true
+    },
+    {
+      "id": "platform-lint",
+      "tool_label": "android-lint",
+      "command": "./gradlew :feature:lintDebug",
+      "scope": "changed feature module",
+      "required_before_review": true
+    },
+    {
+      "id": "focused-tests",
+      "tool_label": "unit-tests",
+      "command": "./gradlew :feature:testDebugUnitTest",
+      "scope": "changed feature module",
+      "required_before_review": true
+    }
+  ],
+  "events": [
+    {
+      "id": "failed-detekt",
+      "status": "READY_FOR_REVIEW",
+      "summary": "Feature implementation and assigned checks are reported ready.",
+      "result_or_artifact_refs": ["artifact://change-r4"],
+      "evidence": ["evidence://self-review-r4", "evidence://detekt-r4-fail", "evidence://lint-r4-pass", "evidence://tests-r4-pass"],
+      "self_review": {
+        "completed": true,
+        "artifact_revision": "change-r4",
+        "acceptance_criteria_inspected": ["complete-behavior", "quality-gates-pass", "intentional-diff"],
+        "risk_areas_inspected": ["stale-verification", "quality-rule-weakening", "unrelated-diff"],
+        "resolved_findings": [],
+        "unresolved_concerns": [],
+        "evidence_ref": "evidence://self-review-r4"
+      },
+      "checks_run": [
+        {
+          "gate_id": "static-analysis",
+          "command": "./gradlew :feature:detekt",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "FAIL",
+          "exit_code": 1,
+          "evidence_ref": "evidence://detekt-r4-fail",
+          "diagnostic": "Feature.kt:42: LongMethod"
+        },
+        {
+          "gate_id": "platform-lint",
+          "command": "./gradlew :feature:lintDebug",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://lint-r4-pass"
+        },
+        {
+          "gate_id": "focused-tests",
+          "command": "./gradlew :feature:testDebugUnitTest",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://tests-r4-pass"
+        }
+      ],
+      "assumptions": [],
+      "issues_or_risks": [],
+      "confidence_and_limits": {"confidence": "high", "limits": []},
+      "recommended_next_action": "Verify the result for integration.",
+      "usage": {"tokens": null, "model_calls": null, "tool_calls": 3, "retries": 0, "elapsed_time": null}
+    },
+    {
+      "id": "missing-lint",
+      "status": "READY_FOR_REVIEW",
+      "summary": "Feature implementation and available assigned checks are reported ready.",
+      "result_or_artifact_refs": ["artifact://change-r4"],
+      "evidence": ["evidence://self-review-r4", "evidence://detekt-r4-pass", "evidence://tests-r4-pass"],
+      "self_review": {
+        "completed": true,
+        "artifact_revision": "change-r4",
+        "acceptance_criteria_inspected": ["complete-behavior", "quality-gates-pass", "intentional-diff"],
+        "risk_areas_inspected": ["stale-verification", "quality-rule-weakening", "unrelated-diff"],
+        "resolved_findings": [],
+        "unresolved_concerns": [],
+        "evidence_ref": "evidence://self-review-r4"
+      },
+      "checks_run": [
+        {
+          "gate_id": "static-analysis",
+          "command": "./gradlew :feature:detekt",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://detekt-r4-pass"
+        },
+        {
+          "gate_id": "focused-tests",
+          "command": "./gradlew :feature:testDebugUnitTest",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://tests-r4-pass"
+        }
+      ],
+      "assumptions": [],
+      "issues_or_risks": [],
+      "confidence_and_limits": {"confidence": "high", "limits": []},
+      "recommended_next_action": "Verify the result for integration.",
+      "usage": {"tokens": null, "model_calls": null, "tool_calls": 2, "retries": 0, "elapsed_time": null}
+    },
+    {
+      "id": "stale-check-evidence",
+      "status": "READY_FOR_REVIEW",
+      "summary": "Feature implementation and assigned checks are reported ready.",
+      "result_or_artifact_refs": ["artifact://change-r4"],
+      "evidence": ["evidence://self-review-r4", "evidence://detekt-r3-pass", "evidence://lint-r4-pass", "evidence://tests-r4-pass"],
+      "self_review": {
+        "completed": true,
+        "artifact_revision": "change-r4",
+        "acceptance_criteria_inspected": ["complete-behavior", "quality-gates-pass", "intentional-diff"],
+        "risk_areas_inspected": ["stale-verification", "quality-rule-weakening", "unrelated-diff"],
+        "resolved_findings": [],
+        "unresolved_concerns": [],
+        "evidence_ref": "evidence://self-review-r4"
+      },
+      "checks_run": [
+        {
+          "gate_id": "static-analysis",
+          "command": "./gradlew :feature:detekt",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r3",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://detekt-r3-pass"
+        },
+        {
+          "gate_id": "platform-lint",
+          "command": "./gradlew :feature:lintDebug",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://lint-r4-pass"
+        },
+        {
+          "gate_id": "focused-tests",
+          "command": "./gradlew :feature:testDebugUnitTest",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://tests-r4-pass"
+        }
+      ],
+      "assumptions": [],
+      "issues_or_risks": [],
+      "confidence_and_limits": {"confidence": "high", "limits": []},
+      "recommended_next_action": "Verify the result for integration.",
+      "usage": {"tokens": null, "model_calls": null, "tool_calls": 3, "retries": 0, "elapsed_time": null}
+    },
+    {
+      "id": "unauthorized-rule-weakening",
+      "status": "READY_FOR_REVIEW",
+      "summary": "Feature implementation and assigned checks are reported ready.",
+      "result_or_artifact_refs": ["artifact://change-r4"],
+      "evidence": ["evidence://self-review-r4", "evidence://detekt-r4-pass", "evidence://lint-r4-pass", "evidence://tests-r4-pass", "diff://detekt-baseline-r4"],
+      "self_review": {
+        "completed": true,
+        "artifact_revision": "change-r4",
+        "acceptance_criteria_inspected": ["complete-behavior", "quality-gates-pass", "intentional-diff"],
+        "risk_areas_inspected": ["stale-verification", "quality-rule-weakening", "unrelated-diff"],
+        "resolved_findings": [],
+        "unresolved_concerns": [],
+        "evidence_ref": "evidence://self-review-r4"
+      },
+      "checks_run": [
+        {
+          "gate_id": "static-analysis",
+          "command": "./gradlew :feature:detekt",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://detekt-r4-pass"
+        },
+        {
+          "gate_id": "platform-lint",
+          "command": "./gradlew :feature:lintDebug",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://lint-r4-pass"
+        },
+        {
+          "gate_id": "focused-tests",
+          "command": "./gradlew :feature:testDebugUnitTest",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://tests-r4-pass"
+        }
+      ],
+      "assumptions": [],
+      "issues_or_risks": [],
+      "confidence_and_limits": {"confidence": "high", "limits": []},
+      "recommended_next_action": "Verify the result for integration.",
+      "usage": {"tokens": null, "model_calls": null, "tool_calls": 3, "retries": 0, "elapsed_time": null},
+      "quality_configuration_change": {
+        "kind": "baseline_expansion",
+        "authorized_and_justified": false,
+        "evidence_ref": "diff://detekt-baseline-r4"
+      }
+    },
+    {
+      "id": "missing-worker-self-review",
+      "status": "READY_FOR_REVIEW",
+      "summary": "Feature implementation and assigned checks are reported ready.",
+      "result_or_artifact_refs": ["artifact://change-r4"],
+      "evidence": ["evidence://detekt-r4-pass", "evidence://lint-r4-pass", "evidence://tests-r4-pass"],
+      "checks_run": [
+        {
+          "gate_id": "static-analysis",
+          "command": "./gradlew :feature:detekt",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://detekt-r4-pass"
+        },
+        {
+          "gate_id": "platform-lint",
+          "command": "./gradlew :feature:lintDebug",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://lint-r4-pass"
+        },
+        {
+          "gate_id": "focused-tests",
+          "command": "./gradlew :feature:testDebugUnitTest",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://tests-r4-pass"
+        }
+      ],
+      "assumptions": [],
+      "issues_or_risks": [],
+      "confidence_and_limits": {"confidence": "high", "limits": []},
+      "recommended_next_action": "Verify the result for integration.",
+      "usage": {"tokens": null, "model_calls": null, "tool_calls": 3, "retries": 0, "elapsed_time": null}
+    },
+    {
+      "id": "all-current-checks-pass",
+      "status": "READY_FOR_REVIEW",
+      "summary": "Feature implementation and assigned checks are reported ready.",
+      "result_or_artifact_refs": ["artifact://change-r4"],
+      "evidence": ["evidence://self-review-r4", "evidence://detekt-r4-pass", "evidence://lint-r4-pass", "evidence://tests-r4-pass"],
+      "self_review": {
+        "completed": true,
+        "artifact_revision": "change-r4",
+        "acceptance_criteria_inspected": ["complete-behavior", "quality-gates-pass", "intentional-diff"],
+        "risk_areas_inspected": ["stale-verification", "quality-rule-weakening", "unrelated-diff"],
+        "resolved_findings": [],
+        "unresolved_concerns": [],
+        "evidence_ref": "evidence://self-review-r4"
+      },
+      "checks_run": [
+        {
+          "gate_id": "static-analysis",
+          "command": "./gradlew :feature:detekt",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://detekt-r4-pass"
+        },
+        {
+          "gate_id": "platform-lint",
+          "command": "./gradlew :feature:lintDebug",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://lint-r4-pass"
+        },
+        {
+          "gate_id": "focused-tests",
+          "command": "./gradlew :feature:testDebugUnitTest",
+          "scope": "changed feature module",
+          "artifact_revision": "change-r4",
+          "result": "PASS",
+          "exit_code": 0,
+          "evidence_ref": "evidence://tests-r4-pass"
+        }
+      ],
+      "assumptions": [],
+      "issues_or_risks": [],
+      "confidence_and_limits": {"confidence": "high", "limits": []},
+      "recommended_next_action": "Verify the result for integration.",
+      "usage": {"tokens": null, "model_calls": null, "tool_calls": 3, "retries": 0, "elapsed_time": null},
+      "quality_configuration_change": null
+    }
+  ]
+}

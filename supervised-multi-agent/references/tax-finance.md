@@ -23,6 +23,10 @@ Treat outputs as educational or analytical unless a qualified, authorized workfl
 
 Use a model or agent whose source-synthesis, calculation, and high-stakes reasoning capabilities meet the contract's risk. Lower-cost workers may perform bounded extraction or arithmetic only when their output is independently checked. If model routing is unavailable, use the current agent only when it meets the required capability; otherwise limit work to sourced extraction or clearly labeled informational analysis and return `BLOCKED` for the high-stakes conclusion or action.
 
+## Worker readiness
+
+Before extraction, calculation, classification, or drafting, give the worker the verified jurisdiction and period, entity facts, output classification, source-document set, current official-rule versions, workpaper format, assumptions, and assigned reconciliation and calculation checks. Before `READY_FOR_REVIEW`, it must self-review provenance and classification, reconcile its current workpaper to source records, and run assigned arithmetic, formula, threshold, period, currency, sign, rounding, and completeness checks. Missing records, stale authority, unreconciled figures, hidden assumptions, failed checks, or evidence from an older workpaper revision prevent a ready status. Route objective discrepancies for focused repair first; passing worker checks never replace independent recomputation, qualified review, or authorization required for a consequential outcome.
+
 ## Supervisor review gate
 
 Before accepting worker extraction, calculations, classifications, estimates, or workpapers, freeze the jurisdiction and period, taxpayer or entity facts, source documents, official-rule versions, assumptions, formulas, prior verified workpaper, and worker output. Reconcile extracted figures to source records, independently recompute material calculations, trace each treatment to current authority, and test eligibility, period boundaries, caps, interactions, carry-forwards, signs, units, currency, and rounding. A balanced total, plausible result, or worker confidence is not proof that the governing rule or classification is correct.

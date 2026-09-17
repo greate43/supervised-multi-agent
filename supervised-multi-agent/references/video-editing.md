@@ -12,6 +12,10 @@ Use this reference for editing, reviewing, localizing, captioning, mixing, or ex
 
 Assign one owner to each timeline or project file. Other workers should produce read-only notes or separate artifacts unless isolated project copies can be merged safely. Keep source media immutable.
 
+## Worker readiness
+
+Before editing, give each worker the approved brief, source and rights ledger, owned time ranges or artifact, preservation constraints, technical delivery specification, and assigned picture, audio, caption, accessibility, or export checks. Before `READY_FOR_REVIEW`, the worker must self-review the current timeline or artifact, affected dependencies, and reported render or playback revision, then run every assigned check available to its tools. Missing, failed, or stale evidence for required captions, sync, loudness, visual quality, encoding, rights, or delivery settings prevents a ready status; use a concern or block when the host cannot verify it. Route objective diagnostics directly for focused repair, but retain editorial, rights, and final-render review by the supervisor or qualified reviewer.
+
 ## Supervisor review gate
 
 Before accepting a material timeline, audio, caption, localization, graphics, or export change, freeze the brief, source and rights ledger, prior verified project revision, changed project or timeline revision, and worker-reported checks. Inspect the changed time ranges plus dependent transitions, overlays, audio, captions, and delivery settings. Review the rendered output—not only the edit plan or timeline—whenever the criterion concerns final picture, sound, captions, sync, encoding, or start-to-finish playback. A successful render is not evidence that the edit is editorially correct or technically deliverable.

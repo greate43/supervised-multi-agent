@@ -11,6 +11,10 @@ Use this reference for factual research, comparisons, recommendations, investiga
 
 Use independent lanes only when they cover distinct questions or provide valuable corroboration.
 
+## Worker readiness
+
+Before research or analysis, give the worker the exact question, scope, freshness rule, source hierarchy, comparison criteria, uncertainty standard, evidence-ledger format, and assigned calculation or provenance checks. Before `READY_FOR_REVIEW`, it must self-review every material claim against current evidence, inspect conflicts and alternative explanations, and run available assigned checks for source dates, schema or data integrity, formulas, units, denominators, and reproducibility. Unsupported or stale claims, unresolved material conflicts, calculation failures, or missing provenance prevent a ready status. Deterministic failures return for focused correction before synthesis, while passing checks still require skeptical supervisor review of reasoning and conclusions.
+
 ## Supervisor review gate
 
 Before accepting worker research or analysis, freeze the question, scope, freshness rule, comparison criteria, evidence ledger, calculations, and submitted synthesis. Trace every material conclusion to a valid source, dataset, or reproducible calculation; check that quotations and values preserve context; test units, assumptions, conflicts, uncertainty, and the strongest credible alternative explanation. Do not accept source count, confident prose, or worker consensus as proof.

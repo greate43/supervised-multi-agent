@@ -12,4 +12,6 @@ Choose roles from the work itself: an executor who produces the artifact, specia
 
 Define task-specific quality dimensions before delegation. Consider correctness, completeness, internal consistency, source quality, usability, accessibility, privacy, safety, reversibility, formatting, and compliance only where relevant. Convert them into acceptance criteria with evidence.
 
+Before execution, give each worker its applicable domain context, complete acceptance slice, likely failure modes, evidence requirements, and available objective checks. Before `READY_FOR_REVIEW`, require a current-artifact self-review and every assigned safe check. A known unmet criterion or missing, failed, or stale required check must become a concern or block, not a ready claim. Route objective diagnostics directly for focused repair; passing them permits the appropriate supervisor review but never self-approval or task completion.
+
 Use the core task contract, evidence ledger, scoped context, delta handoffs, independent review, and repair loop. If the task reveals a specialized domain, load the applicable skill or reference at that point rather than expanding this fallback into a generic checklist.

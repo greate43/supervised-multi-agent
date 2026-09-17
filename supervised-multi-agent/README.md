@@ -12,7 +12,7 @@ Use this skill when delegation, independent review, iterative repair, or special
 - Chooses solo work by default and delegates only when it materially improves quality.
 - Routes only the domain guidance needed for the task.
 - Uses lower-cost workers only for bounded work that is evidence-checked; independent verification is used when the host can provide it.
-- Gives workers the applicable domain or project context, quality criteria, conventions, and checks before execution, then requires a focused self-review so predictable defects are fixed before supervisor review.
+- Applies quality at source across coding, writing, research, media, finance, and unlisted work: workers receive domain criteria and checks before execution, then self-review so predictable defects are fixed before supervisor review.
 - For coding work, inspects the current architecture and design system before creating UI or logic, reuses compatible implementations, and requires a concrete boundary reason when new code is safer.
 - Discovers repository-native quality gates and rejects worker code before judgment-heavy review when required lint, static-analysis, formatting, compiler, or test evidence is missing, failing, or stale.
 - Makes the supervisor review every material worker patch before integration, grade its assigned criteria from evidence, and require repair or block when code is not demonstrably safe; the same review discipline applies before final merge.

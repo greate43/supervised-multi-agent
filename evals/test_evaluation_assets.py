@@ -473,8 +473,19 @@ class EvaluationAssetTests(unittest.TestCase):
         self.assertIn("isolated-review", profiles)
         self.assertIn("video-tool-fallback", cases)
         self.assertIn("coding-quality-gate-prefilter", cases)
+        self.assertIn("cross-domain-worker-readiness", cases)
         self.assertTrue(cases["video-tool-fallback"].profiles.issubset(profiles))
         self.assertTrue(cases["video-tool-fallback"].nondeterministic)
+        self.assertEqual(
+            set(cases["cross-domain-worker-readiness"].criteria_by_id),
+            {
+                "domain-quality-brief",
+                "producer-self-review",
+                "objective-check-prefilter",
+                "truthful-worker-status",
+                "supervisor-review-boundary",
+            },
+        )
         self.assertEqual(
             set(cases["architecture-reuse-before-creation"].criteria_by_id),
             {

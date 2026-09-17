@@ -13,6 +13,10 @@ Choose roles according to the work:
 
 For small pieces, combine roles. Require independent final review only when the user, governing instructions, consequence of error, or external-publication risk demands it; otherwise use the core review fallback appropriate to the host.
 
+## Worker readiness
+
+Before drafting or editing, give the worker the canonical brief, audience, purpose, source ledger, voice and meaning-preservation constraints, style and format requirements, and assigned checks. Before `READY_FOR_REVIEW`, it must self-review the current artifact against that complete slice and run available assigned checks such as factual-claim coverage, citations and links, spelling or style, cross-references, accessibility, and format validation. A known unsupported claim, changed meaning, missing section, failed check, or stale check result prevents a ready status; report the concern or block instead. Deterministic failures should return directly for focused correction, while a passing worker artifact still requires the supervisor's editorial and factual review.
+
 ## Supervisor review gate
 
 Before accepting a material worker draft or edit, freeze the canonical brief, source ledger, prior accepted revision, and worker artifact. Review the artifact itself rather than the worker's summary. Grade the applicable criteria for factual support, argument and structure, completeness, audience and purpose, preservation of meaning and voice, required style and format, originality, accessibility, grammar, and cross-reference consistency. Verify changed factual claims against their sources and inspect enough surrounding text to catch contradictions or damage outside the edited passage.

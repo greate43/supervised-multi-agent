@@ -42,6 +42,8 @@ Read only the references relevant to the request:
 
 For mixed work, read relevant references. Also read the general reference for medical, legal, safety-critical, regulated, or imminent-harm work unless an applicable specialist protocol already covers that risk; otherwise use it only when no specific reference applies.
 
+The worker briefing, producer self-review, required-check evidence, deterministic prefilter, and supervisor-review boundary below apply in every domain. Domain references define what quality, evidence, and checks mean for that artifact; they do not weaken the shared readiness gate.
+
 ## Supervisor and model routing
 
 - Inspect host models, tools, delegation, and isolation; never assume vendor tool names, model IDs, or subagent support.

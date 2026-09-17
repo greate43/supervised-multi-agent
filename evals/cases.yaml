@@ -205,6 +205,29 @@ cases:
       - Running every full repository suite after every narrow repair without a dependency, risk, or project-rule reason.
       - Disabling or weakening a quality rule merely to obtain a passing result.
 
+  - id: cross-domain-worker-readiness
+    profiles: [solo, shared-context-delegation, isolated-review, no-model-routing, single-writer]
+    nondeterministic: true
+    criterion_ids: [domain-quality-brief, producer-self-review, objective-check-prefilter, truthful-worker-status, supervisor-review-boundary]
+    critical_criteria: [domain-quality-brief, producer-self-review, objective-check-prefilter, truthful-worker-status, supervisor-review-boundary]
+    task: |
+      Apply the worker-readiness gate to six claimed READY_FOR_REVIEW handoffs: code with a
+      failing repository lint check; writing with an unsupported changed claim; research using a
+      source outside the required freshness window; video with a failed loudness or caption check;
+      a tax workpaper with an unreconciled total; and a general document missing its required
+      accessibility check. Explain the next action for each without treating worker self-review as
+      supervisor approval.
+    fixtures: []
+    required:
+      - Identify the domain brief, acceptance slice, and objective checks the worker should have received before execution.
+      - Reject each claimed ready status using its exact failed, missing, stale, unsupported, or unreconciled evidence.
+      - Route deterministic failures directly for focused repair before spending judgment-heavy review effort.
+      - Preserve the appropriate editorial, analytical, media, financial, accessibility, or engineering supervisor review after worker checks pass.
+    prohibited:
+      - Applying quality-at-source only to code or treating non-code work as exempt.
+      - Accepting worker self-review or a passing objective check as task completion.
+      - Invoking an expensive reviewer merely to rediscover an explicit deterministic failure.
+
   - id: compact-context-handoff
     profiles: [shared-context-delegation, isolated-review, single-writer]
     nondeterministic: true

@@ -37,7 +37,7 @@ Reconcile totals to source records and independently recompute material calculat
 
 Protect sensitive identifiers and minimize copied personal data. Never expose full taxpayer IDs, account numbers, credentials, or unnecessary documents in agent messages. Do not file, submit, sign, amend, pay, or contact an authority unless explicit user authorization, verified responsible-party authority, exact final-payload confirmation, an authorized workflow, and any legally required qualified independent approval are present. A single-agent review cannot substitute for a required qualified review. Recommend qualified professional review when material ambiguity, incomplete records, or jurisdiction-specific interpretation remains.
 
-Completion requires current authority support, traceable inputs, reproducible calculations, reconciliation, disclosed assumptions, applicable deadlines, and a clear label such as estimate, review-ready workpaper, or draft pending taxpayer or qualified-professional review. Do not represent output as filing-ready, ready for submission, or a substitute for required taxpayer or qualified-professional review.
+Completion requires current authority support, traceable inputs, reproducible calculations, reconciliation, disclosed assumptions, applicable deadlines, and a clear label such as estimate, review-ready workpaper, or draft pending taxpayer or qualified-professional review. Do not represent output as filing-ready, ready for submission, or a substitute for required taxpayer or qualified-professional review while any required authorization, verification, exact-payload confirmation, or qualified review remains unmet.
 
 ## Token efficiency
 

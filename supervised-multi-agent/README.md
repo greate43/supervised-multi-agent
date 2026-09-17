@@ -4,7 +4,7 @@ A portable Agent Skill for completing complex work with quality-controlled deleg
 
 ## When to use it
 
-Use this skill when delegation, independent review, iterative repair, or specialist routing materially improves a coding, writing, research, media, tax/finance, analysis, or operations task. It defaults to a single-agent quality workflow when delegation is unavailable or does not materially improve the result.
+Use this skill when delegation, independent review, iterative repair, or specialist routing materially improves a coding, writing, research, media, tax/finance, analysis, or operations task. Do not invoke it for routine solo work. When the skill is applicable but delegation is unavailable or does not materially improve the result, it uses a single-agent quality workflow.
 
 ## What it does
 

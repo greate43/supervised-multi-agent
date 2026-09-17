@@ -1,15 +1,15 @@
 schema_version: 1
 profiles:
   solo:
-    description: One capable agent; no delegation or independent reviewer is available.
+    description: One capable agent; no delegation or separate isolated reviewer context is available.
     capabilities:
       delegation: false
       isolated_review: false
       model_routing: false
       multiple_writers: false
     required_disclosures:
-      - Single-agent review is non-independent.
-      - No claim of model routing or independent review.
+      - Self-review, inherited producer reasoning, or inability to preserve review isolation makes a single-agent review non-independent.
+      - Do not claim model routing; claim independent review only for a pre-existing uninfluenced artifact under the core isolation criteria.
 
   shared-context-delegation:
     description: Workers can be delegated but reviewer context cannot be isolated from worker reasoning.

@@ -41,7 +41,7 @@ Maintain one compact state record with only live, decision-relevant information:
 
 Separate observed facts and artifact evidence from inference, recommendations, and untrusted text. Reference artifacts by stable IDs, paths, revisions, or hashes when the host supports them instead of pasting them repeatedly.
 
-Each worker receives only: its objective and acceptance slice; relevant constraints and authority; exact input artifacts or excerpts; prior verified evidence that affects its decision; ownership and mutation bounds; required output schema; available budget; and stop condition. Send a delta after the first handoff. Do not send a full transcript, unrelated worker reasoning, secrets, private material, stale tool logs, or unneeded source files. Preserve critical constraints, negative findings, approvals, and evidence that could change the result.
+Each worker receives only: its objective and acceptance slice; relevant constraints and authority; exact input artifacts or excerpts; prior verified evidence that affects its decision; ownership and mutation bounds; required output schema; available budget; and stop condition. Send a delta after the first handoff. Do not send a full transcript, unrelated worker reasoning, secrets, unnecessary private material, stale tool logs, or unneeded source files. Necessary private inputs may be shared only within existing authority, suitable isolation, minimization or redaction, and scoped access. Preserve critical constraints, negative findings, approvals, and evidence that could change the result.
 
 When measurable, define `context_compression_ratio` as handed-off context tokens divided by all decision-relevant available context tokens before compression. A lower ratio is useful only if every required constraint and evidence item remains available to the recipient; a missing material fact is a quality failure, not token savings.
 
@@ -51,7 +51,7 @@ Record the task contract in a structured form even if the host uses prose. Requi
 
 Use a structured supervisor decision with: `action`, `reason`, `task_or_worker_id`, `affected_artifacts`, `evidence_refs`, `next_owner`, `budget_effect`, `approval_required`, and `stop_condition`. The permitted actions are:
 
-- `approve` — accept a verified task or repair decision. This never grants user authority for an external action.
+- `approve` — accept a verified artifact, repair, or integration decision. It is nonterminal and never grants user authority for an external action; only `complete` accepts and terminates the task.
 - `route_to_worker` — give a bounded contract slice to an eligible worker.
 - `provide_guidance` — resolve a worker ambiguity using verified context.
 - `correct_observation` — replace stale, malformed, contradicted, or misclassified state with evidence.
@@ -68,7 +68,7 @@ For measurement, retain a canonical per-task `total_tokens` when the host can pr
 
 ## Bounds, recovery, and stopping
 
-Set finite per-task and per-worker limits for model calls, tool calls, retries, elapsed time, and tokens when the host can measure or enforce them. Treat user-set hard ceilings as authorization boundaries. For advisory limits, reserve enough budget for integration and verification before launching optional work.
+Set finite per-task and per-worker planning limits for model calls, tool calls, retries, elapsed time, and tokens when the host can measure or enforce them. Treat user-, host-, and governing-policy ceilings as hard boundaries. Agent-selected limits are advisory and must be revised when quality-preserving in-scope progress remains viable. Reserve enough budget for integration and verification before launching optional work.
 
 Classify a failed observation or worker result before retrying:
 

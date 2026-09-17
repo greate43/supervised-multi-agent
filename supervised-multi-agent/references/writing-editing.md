@@ -11,7 +11,7 @@ Choose roles according to the work:
 - Developmental editor: review argument, structure, completeness, audience fit, and narrative flow.
 - Copyeditor or fact checker: review clarity, consistency, grammar, style, and factual accuracy.
 
-For small pieces, combine roles but retain an independent final review when accuracy, persuasion, publication, or brand voice matters.
+For small pieces, combine roles. Require independent final review only when the user, governing instructions, consequence of error, or external-publication risk demands it; otherwise use the core review fallback appropriate to the host.
 
 ## Supervisor review gate
 

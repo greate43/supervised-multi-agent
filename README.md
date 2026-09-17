@@ -18,7 +18,7 @@ npx skills add greate43/supervised-multi-agent
 
 Invoke `$supervised-multi-agent` when delegation, independent review, iterative repair, or specialist routing would materially improve a task.
 
-The workflow defaults to one capable agent when delegation would not materially improve quality. It uses a team only for independent work, specialist capability, genuine review blind spots, or safe ownership boundaries.
+Do not invoke it for routine solo work. When the skill is applicable, the workflow defaults to one capable agent if delegation would not materially improve quality and uses a team only for independent work, specialist capability, genuine review blind spots, or safe ownership boundaries.
 
 For coding tasks, it also searches the existing architecture, components, functions, tests, and conventions before creating parallel UI or logic. Compatible implementations are reused or extended; incompatible reuse and unexplained duplication fail the quality gate.
 

@@ -39,6 +39,7 @@ No benchmark result is claimed until it is reproduced and published with its evi
 ## Contents
 
 - [Skill instructions](supervised-multi-agent/SKILL.md)
+- [Claude subagent host guide](supervised-multi-agent/references/claude-host.md)
 - [Detailed documentation](supervised-multi-agent/README.md)
 - [Evaluation framework](evals/README.md)
 - [MIT License](supervised-multi-agent/LICENSE)
